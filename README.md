@@ -1,10 +1,10 @@
 
-### human-motion-prediction
+## human-motion-prediction
 
 This is the code for the paper
 
 ```
-Julieta Martinez, Michael J. Black, Javier Romero. 
+Julieta Martinez, Michael J. Black, Javier Romero.
 On human motion prediction using recurrent neural networks. CVPR 17.
 ```
 
@@ -12,7 +12,7 @@ Our code runs under [Tensorflow](https://github.com/tensorflow/tensorflow/) 1.0 
 
 The code in this repository was written by [una-dinosauria](https://github.com/una-dinosauria/).
 
-#### Get the data
+### Get the data
 
 First of all, you need to get the human3.6m dataset on exponential map format.
 
@@ -25,19 +25,19 @@ rm h3.6m.zip
 cd ..
 ```
 
-#### Baselines
+### Baselines
 
 A major finding in our paper is that a set of simple baselines outperform the state of the art in human motion prediction. To reproduce these baseline results, run
 
 `python predict_motion.py --run_baselines`
 
-#### Sequence-to-sequence training
+### Sequence-to-sequence training
 
 You can also reproduce our results on all the actions of our strongest model by running
 
 `python predict_motion.py --multiaction --supervised`
 
-#### Citing
+### Citing
 
 If you use our code, please cite our work
 
@@ -50,5 +50,5 @@ If you use our code, please cite our work
 }
 ```
 
-#### Licence
+### Licence
 MIT
