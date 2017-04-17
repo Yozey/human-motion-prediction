@@ -13,6 +13,7 @@ import translate
 import data_utils
 import seq2seq_model
 
+# Dummy object to create parameters for dummy model
 class Object(object):
     pass
 
@@ -21,17 +22,13 @@ def running_average( ashesh_data, actions, k ):
   Compute the error if we take the average of the last k frames.
 
   Args:
-    ashesh_data
-
+    ashesh_data:
     k: number of frames to average
 
   Returns:
     errs: a dictionary where, for each action, we have a 100-long list with the
           error at each point in time.
   """
-
-  # if k == 1:
-    # return last_frame_constant( ashesh_data, actions )
 
   # Get how many batches we have
   enc_in, dec_in, dec_out = ashesh_data[ actions[0] ]
@@ -57,11 +54,9 @@ def running_average( ashesh_data, actions, k ):
       last_frame = dec_in[i][0, :]
       last_frame[0:6] = 0
 
-      # Get the last k-1 frames
       if k > 1:
+        # Get the last k-1 frames
         last_k = enc_in[i][(-k+1):, :]
-        # last_k = enc_in[i][-k:, :]
-
         assert( last_k.shape[0] == (k-1) )
 
         # Merge and average them
@@ -109,12 +104,14 @@ def denormalize_and_convert_to_euler( data, data_mean, data_std, dim_to_ignore, 
 
 def main():
 
+  # Comment this line and uncomment below to get results for all the actions
   actions = ["discussion", "eating", "smoking", "walking"]
 
   # actions = ["directions", "discussion", "eating", "greeting", "phoning",
   #             "posing", "purchases", "sitting", "sittingdown", "smoking",
   #             "takingphoto", "waiting", "walking", "walkingdog", "walkingtogether"]
 
+  # Parameters for dummy model. We only build the model to load the data.
   one_hot = False
   FLAGS = Object()
   FLAGS.data_dir = "./data/h3.6m/dataset"
@@ -138,7 +135,7 @@ def main():
   dtype = tf.float32
 
   # WE do not need a GPU for this
-  with tf.Session(config=tf.ConfigProto( device_count = {"GPU": 0} )) as sess:
+  with tf.Session(config=tf.ConfigProto( device_count = {"GPU": 0})) as sess:
 
     model = seq2seq_model.Seq2SeqModel(
         FLAGS.architecture,
