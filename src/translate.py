@@ -35,7 +35,7 @@ tf.app.flags.DEFINE_float("max_gradient_norm", 5, "Clip gradients to this norm."
 tf.app.flags.DEFINE_integer("batch_size", 16, "Batch size to use during training.")
 tf.app.flags.DEFINE_integer("iterations", 20000, "Iterations to train for.")
 # Architecture
-tf.app.flags.DEFINE_string("architecture", "tied", "Seq2seq architecture to use.")
+tf.app.flags.DEFINE_string("architecture", "tied", "Seq2seq architecture to use: [basic, tied].")
 tf.app.flags.DEFINE_integer("size", 1024, "Size of each model layer.")
 tf.app.flags.DEFINE_integer("num_layers", 1, "Number of layers in the model.")
 tf.app.flags.DEFINE_integer("seq_length_in", 50, "Length of sequences to feed into the encoder")
@@ -72,9 +72,7 @@ tf.app.flags.DEFINE_integer("try_to_load", 0, "Try to load a previous checkpoint
 FLAGS = tf.app.flags.FLAGS
 
 train_dir = os.path.join( FLAGS.train_dir, FLAGS.action,
-  #'iterations_{0}'.format( FLAGS.iterations ),
   'out_{0}'.format(FLAGS.seq_length_out),
-  #'loss_velocities{0}'.format(FLAGS.loss_velocities),
   FLAGS.architecture,
   FLAGS.loss_to_use,
   'omit_one_hot' if FLAGS.omit_one_hot else 'one_hot',

@@ -160,27 +160,12 @@ class Seq2SeqModel(object):
     if architecture == "basic":
       # Basic RNN does not have a loop function in its API, so Copying here.
       with vs.variable_scope("basic_rnn_seq2seq"):
-        _, enc_state = tf.nn.rnn(cell, enc_in, dtype=tf.float32) # Encoder
-        outputs, self.states = tf.nn.seq2seq.rnn_decoder( dec_in, enc_state, cell, loop_function=lf ) # Decoder
+        _, enc_state = tf.contrib.rnn.static_rnn(cell, enc_in, dtype=tf.float32) # Encoder
+        outputs, self.states = tf.contrib.legacy_seq2seq.rnn_decoder( dec_in, enc_state, cell, loop_function=lf ) # Decoder
 
     elif architecture == "tied":
       # outputs, self.states = tf.nn.seq2seq.tied_rnn_seq2seq( enc_in, dec_in, cell, loop_function=lf )
       outputs, self.states = tf.contrib.legacy_seq2seq.tied_rnn_seq2seq( enc_in, dec_in, cell, loop_function=lf )
-
-    elif architecture == "attention":
-      with vs.variable_scope("attention_rnn_seq2seq"):
-
-        # Simple encoder
-        enc_outputs, enc_state = tf.nn.rnn(cell, enc_in, dtype=tf.float32)
-
-        # Get the top states
-        top_states = [array_ops.reshape(e, [-1, 1, cell.output_size])
-            for e in enc_outputs]
-        attention_states = array_ops.concat(1, top_states)
-
-        # Pass to the attention decoder
-        outputs, self.states = tf.nn.seq2seq.attention_decoder(dec_in, enc_state,
-                      attention_states, cell, loop_function=lf)
 
     else:
         raise(ValueError, "Uknown architecture: %s" % architecture )
