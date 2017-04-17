@@ -32,13 +32,12 @@ tf.app.flags.DEFINE_float("learning_rate", .005, "Learning rate.")
 tf.app.flags.DEFINE_float("learning_rate_decay_factor", 1, "Learning rate is mulitplied by this much. 1 means no decay.")
 tf.app.flags.DEFINE_integer("learning_rate_step", 1000, "Every this many steps, do decay.")
 tf.app.flags.DEFINE_float("max_gradient_norm", 5, "Clip gradients to this norm.")
-tf.app.flags.DEFINE_float("dropout", 1, "Dropout keep probability for RNN layers.")
 tf.app.flags.DEFINE_integer("batch_size", 16, "Batch size to use during training.")
 tf.app.flags.DEFINE_integer("iterations", 20000, "Iterations to train for.")
 # Architecture
 tf.app.flags.DEFINE_string("architecture", "tied", "Seq2seq architecture to use.")
 tf.app.flags.DEFINE_integer("size", 1024, "Size of each model layer.")
-tf.app.flags.DEFINE_integer("num_layers", 1, "Number of layers in tcvpr17_motion_predictionhe model.")
+tf.app.flags.DEFINE_integer("num_layers", 1, "Number of layers in the model.")
 tf.app.flags.DEFINE_integer("seq_length_in", 50, "Length of sequences to feed into the encoder")
 #tf.app.flags.DEFINE_integer("seq_length_out", 25, "Length of sequences that the decoder has to predict")
 tf.app.flags.DEFINE_integer("seq_length_out", 10, "Length of sequences that the decoder has to predict")
@@ -84,7 +83,6 @@ train_dir = os.path.join( FLAGS.train_dir, FLAGS.action,
   'lstm' if FLAGS.use_lstm else 'gru',
   'depth_{0}'.format(FLAGS.num_layers),
   'size_{0}'.format(FLAGS.size),
-  #'dropout_{0}'.format(FLAGS.dropout),
   'lr_{0}'.format(FLAGS.learning_rate),
   'residual_vel' if FLAGS.residual_velocities else 'not_residual_vel',
   'residual_rnn' if FLAGS.residual_rnn else 'not_residual_rnn',
@@ -177,7 +175,7 @@ def train():
 
       # === Training step ===
       encoder_inputs, decoder_inputs, decoder_outputs = model.get_batch( train_set, not FLAGS.omit_one_hot )
-      _, step_loss, loss_summary, lr_summary = model.step( sess, encoder_inputs, decoder_inputs, decoder_outputs, FLAGS.dropout, False )
+      _, step_loss, loss_summary, lr_summary = model.step( sess, encoder_inputs, decoder_inputs, decoder_outputs, False )
       model.train_writer.add_summary( loss_summary, current_step )
       model.train_writer.add_summary( lr_summary, current_step )
 
@@ -194,13 +192,12 @@ def train():
       if current_step % FLAGS.test_every == 0:
 
         # === Validation with randomly chosen seeds ===
-        test_dropout_keep_probability = 1.0 # always 1.0 at val/test time
         forward_only = True
 
         encoder_inputs, decoder_inputs, decoder_outputs = model.get_batch( test_set, not FLAGS.omit_one_hot )
         step_loss, loss_summary = model.step(sess,
             encoder_inputs, decoder_inputs, decoder_outputs,
-            test_dropout_keep_probability, noise_level, forward_only)
+            noise_level, forward_only)
         val_loss = step_loss # Loss book-keeping
 
         model.test_writer.add_summary(loss_summary, current_step)

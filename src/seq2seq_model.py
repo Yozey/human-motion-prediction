@@ -104,12 +104,6 @@ class Seq2SeqModel(object):
     else: # or a GRU
       single_cell = tf.contrib.rnn.GRUCell( self.rnn_size )
 
-    # Might have dropout
-    self.dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
-    single_cell = tf.contrib.rnn.DropoutWrapper( single_cell,
-                                          input_keep_prob=self.dropout_keep_prob,
-                                          output_keep_prob=self.dropout_keep_prob)
-
     # Might have residual connection
     if residual_rnn:
       single_cell = rnn_cell_extensions.ResidualWrapper( single_cell )
@@ -507,15 +501,14 @@ class Seq2SeqModel(object):
 
 
   def step(self, session, encoder_inputs, decoder_inputs, decoder_outputs,
-             dropout_keep_prob, forward_only, ashesh_seeds=False ):
+             forward_only, ashesh_seeds=False ):
     """Run a step of the model feeding the given inputs.
 
     Args:
       session: tensorflow session to use.
-      encoder_inputs: list of numpy vectors to feed as encoder           inputs.
+      encoder_inputs: list of numpy vectors to feed as encoder inputs.
       decoder_inputs: list of numpy vectors to feed as decoder inputs.
       decoder_outputs: list of numpy vectors that are the expected decoder outputs.
-      dropout_keep_prob: float that indicates dropout keep probability in rnn layers
       forward_only: whether to do the backward step or only forward.
       ashesh_seeds: True if you want to evaluate using the sequences of Ashesh
 
@@ -529,8 +522,7 @@ class Seq2SeqModel(object):
     """
     input_feed = {self.encoder_inputs: encoder_inputs,
                   self.decoder_inputs: decoder_inputs,
-                  self.decoder_outputs: decoder_outputs,
-                  self.dropout_keep_prob: dropout_keep_prob}
+                  self.decoder_outputs: decoder_outputs}
 
     # Output feed: depends on whether we do a backward step or not.
     if not ashesh_seeds:
@@ -687,6 +679,6 @@ class Seq2SeqModel(object):
       encoder_inputs[i, :, :]  = data_sel[0:source_seq_len-1, :]
       decoder_inputs[i, :, :]  = data_sel[source_seq_len-1:(source_seq_len+target_seq_len-1), :]
       decoder_outputs[i, :, :] = data_sel[source_seq_len:, :]
-      
+
 
     return encoder_inputs, decoder_inputs, decoder_outputs
