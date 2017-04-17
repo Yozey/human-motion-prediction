@@ -12,11 +12,13 @@ Our code runs under [Tensorflow](https://github.com/tensorflow/tensorflow/) 1.0 
 
 The code in this repository was written by [una-dinosauria](https://github.com/una-dinosauria/).
 
-### Get the data
+### Get this code and the data
 
-First of all, you need to get the human3.6m dataset on exponential map format.
+First things first, clone this repo and get the human3.6m dataset on exponential map format.
 
 ```bash
+git clone git@github.com:una-dinosauria/human-motion-prediction.git
+cd human-motion-prediction
 mkdir data
 cd data
 wget http://www.cs.stanford.edu/people/ashesh/h3.6m.zip
