@@ -170,7 +170,7 @@ def main():
   FLAGS.batch_size = 8
   FLAGS.learning_rate = 0.005
   FLAGS.learning_rate_decay_factor = 1
-  summaries_dir = "/home/julieta/Desktop/scratch/log/"
+  summaries_dir = "./log/"
   FLAGS.loss_to_use = "self_fed"
   FLAGS.residual_rnn = False
   FLAGS.space_encoder = False
