@@ -10,7 +10,7 @@ On human motion prediction using recurrent neural networks. CVPR 17.
 
 Our code runs under [Tensorflow](https://github.com/tensorflow/tensorflow/) 1.0 or later.
 
-The code in this repository was written by [una-dinosauria](https://github.com/una-dinosauria/) and [libicocco](https://github.com/libicocco/) .
+The code in this repository was written by [una-dinosauria](https://github.com/una-dinosauria/) and [libicocco](https://github.com/libicocco/).
 
 ### Get this code and the data
 
