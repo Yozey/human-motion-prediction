@@ -1,5 +1,5 @@
 
-# A bunch of simple baselines that reviewers probably want to see for short term prediction
+# Super-simple baselines for short term human motion prediction
 
 from __future__ import absolute_import
 from __future__ import division
@@ -18,10 +18,11 @@ class Object(object):
 
 def last_frame_constant( ashesh_data, actions ):
   """
-  Compute the error if we simply take the last frame as a constant.
+  Compute the error if we simply take the last input frame as a constant.
 
   Args:
     ashesh_data
+    actions
 
   Returns:
     errs: a dictionary where, for each action, we have a 100-long list with the
@@ -33,9 +34,6 @@ def last_frame_constant( ashesh_data, actions ):
 
   n_sequences = len( enc_in )
   seq_length_out = dec_out[0].shape[0]
-
-  print( n_sequences )
-  print( seq_length_out )
 
   errs = dict()
 
@@ -64,88 +62,12 @@ def last_frame_constant( ashesh_data, actions ):
       errs[ action ][i, :] = ee
 
     errs[action] = np.mean( errs[action], 0 )
-    print( action )
-    # print( errs[action] )
-    # print( ",".join(map(str,errs[action].tolist())) )
-    # for idx in [1,3,7,9]: # 80, 160, 380, 400
-    #   print( "e@{0}: {1:.2f}".format( (idx+1)*40, errs[action][idx] ) )
-
-    #for idx in [1,3,7,9]: # 80, 160, 380, 400
-    print( "{0:.2f} & {1:.2f} & {2:.2f} & {3:.2f} &".format( errs[action][1], errs[action][3], errs[action][7], errs[action][9] ) )
-
-  return errs
-
-def last_vel_constant( ashesh_data, actions ):
-  """
-  Compute the error if we simply take the last velocity as constant.
-
-  Args:
-    ashesh_data
-
-  Returns:
-    errs: a dictionary where, for each action, we have a 100-long list with the
-          error at each point in time.
-  """
-
-  # Get how many batches we have
-  enc_in, dec_in, dec_out = ashesh_data[ actions[0] ]
-
-  n_sequences = len( enc_in )
-  seq_length_out = dec_out[0].shape[0]
-
-  print( n_sequences )
-  print( seq_length_out )
-
-  errs = dict()
-
-  for action in actions:
-
-    # Make space for the error
-    errs[ action ] = np.zeros( (n_sequences, seq_length_out) )
-
-    # Get the lists for this action
-    enc_in, dec_in, dec_out = ashesh_data[action]
-
-    for i in np.arange( n_sequences ):
-
-      n, d = dec_out[i].shape
-
-      first_frame_decoder = dec_in[i][0, :]
-      first_frame_decoder[0:6] = 0
-
-      last_frame_encoder = enc_in[i][-1, :]
-      last_frame_encoder[0:6] = 0
-
-      # Compute the velocity
-      velocity = first_frame_decoder - last_frame_encoder
-
-      # Keep the prediction here
-      prediction = np.zeros_like( dec_out[i] )
-      prediction[0, :] = first_frame_decoder + velocity
-
-      # Just keep adding the velocity
-      for j in np.arange( 1, n ):
-        prediction[i, :] = prediction[i-1,:] + velocity
-
-      # Compute the loss
-      dec_out[i][:, 0:6] = 0
-      idx_to_use = np.where( np.std( dec_out[i], 0 ) > 1e-4 )[0]
-
-      ee = np.power( dec_out[i][:,idx_to_use] - prediction[:, idx_to_use], 2 )
-      ee = np.sum( ee, 1 )
-      ee = np.sqrt( ee )
-      errs[ action ][i, :] = ee
-
-    errs[action] = np.mean( errs[action], 0 )
-    print( action )
-    print( errs[action] )
-    print( ",".join(map(str,errs[action].tolist())) )
 
   return errs
 
 def running_average( ashesh_data, actions, k ):
   """
-  Compute the error if we simply take the last frame as a constant.
+  Compute the error if we take the average of the last k frames.
 
   Args:
     ashesh_data
@@ -166,8 +88,8 @@ def running_average( ashesh_data, actions, k ):
   n_sequences = len( enc_in )
   seq_length_out = dec_out[0].shape[0]
 
-  print( n_sequences )
-  print( seq_length_out )
+  # print( n_sequences )
+  # print( seq_length_out )
 
   errs = dict()
 
@@ -190,7 +112,7 @@ def running_average( ashesh_data, actions, k ):
       last_k = enc_in[i][(-k+1):, :]
       assert( last_k.shape[0] == (k-1) )
 
-      # Merge them an average them
+      # Merge and average them
       avg = np.mean( np.vstack( (last_k, first_frame) ), 0 )
 
       dec_out[i][:, 0:6] = 0
@@ -202,24 +124,43 @@ def running_average( ashesh_data, actions, k ):
       errs[ action ][i, :] = ee
 
     errs[action] = np.mean( errs[action], 0 )
-    print( action )
-    print( errs[action] )
-    print( ",".join(map(str,errs[action].tolist())) )
 
   return errs
 
-def main():
+def denormalize_and_convert_to_euler( data, data_mean, data_std, dim_to_ignore, actions, one_hot ):
+  """
+  Args:
+    data
+    data_mean
+    ...
 
-  # actions = ["walking", "eating", "smoking", "discussion"]
-  # actions = ["directions"]
-  # actions = ["eating"]
+  Returns:
+    all_denormed: a list with nbatch entries. Each entry is an n-by-d matrix
+                  that corresponds to a denormalized sequence in Euler angles
+  """
+
+  all_denormed = []
+
+  for i in np.arange( data.shape[0] ):
+    denormed = data_utils.unNormalizeData(data[i,:,:], data_mean, data_std, dim_to_ignore, actions, one_hot )
+
+    for j in np.arange( denormed.shape[0] ):
+      for k in np.arange(3,97,3):
+        denormed[j,k:k+3] = data_utils.rotmat2euler( data_utils.expmap2rotmat( denormed[j,k:k+3] ))
+
+    all_denormed.append( denormed )
+
+  return all_denormed
+
+
+def main():
   actions = ["directions", "discussion", "eating", "greeting", "phoning",
               "posing", "purchases", "sitting", "sittingdown", "smoking",
               "takingphoto", "waiting", "walking", "walkingdog", "walkingtogether"]
-  one_hot = False
 
+  one_hot = False
   FLAGS = Object()
-  FLAGS.data_dir = "../../rnn/data/ashesh"
+  FLAGS.data_dir = "./data/h3.6m/dataset"
   FLAGS.architecture = "tied"
   FLAGS.seq_length_in = 50
   FLAGS.seq_length_out = 100
@@ -240,10 +181,8 @@ def main():
   forward_only = False,
   dtype = tf.float32
 
-  gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1)
-  device_count = {"GPU": 0}
-
-  with tf.Session(config=tf.ConfigProto( gpu_options=gpu_options, device_count = device_count )) as sess:
+  # WE do not need a GPU for this
+  with tf.Session(config=tf.ConfigProto( device_count = {"GPU": 0} )) as sess:
 
     model = seq2seq_model.Seq2SeqModel(
         FLAGS.architecture,
@@ -286,39 +225,35 @@ def main():
 
       ashesh_data[action] = (enc_in, dec_in, dec_out)
 
-    # Error with the last frame constant
+    # Compute baseline errors
     errs_constant_frame = last_frame_constant( ashesh_data, actions )
-    # errs_constant_vel = last_vel_constant( ashesh_data, actions )
-    # running_average_2 = running_average( ashesh_data, actions, 2 )
-    # running_average_4 = running_average( ashesh_data, actions, 4 )
+    running_average_2   = running_average( ashesh_data, actions, 2 )
+    running_average_4   = running_average( ashesh_data, actions, 4 )
 
-  print("done")
+    print()
+    print("=== Zero-velocity ===")
+    print("{0: <16} | {1:4d} | {2:4d} | {3:4d} | {4:4d}".format("milliseconds", 80, 160, 380, 400))
+    for action in actions:
+      print("{0: <16} | {1:.2f} | {2:.2f} | {3:.2f} | {4:.2f}".format( action,
+            errs_constant_frame[action][1], errs_constant_frame[action][3],
+            errs_constant_frame[action][7], errs_constant_frame[action][9] ))
 
+    print()
+    print("=== Runnning avg. 2 ===")
+    print("{0: <16} | {1:4d} | {2:4d} | {3:4d} | {4:4d}".format("milliseconds", 80, 160, 380, 400))
+    for action in actions:
+      print("{0: <16} | {1:.2f} | {2:.2f} | {3:.2f} | {4:.2f}".format( action,
+            running_average_2[action][1], running_average_2[action][3],
+            running_average_2[action][7], running_average_2[action][9] ))
 
-def denormalize_and_convert_to_euler( data, data_mean, data_std, dim_to_ignore, actions, one_hot ):
-  """
-  Args:
-    data
-    data_mean
-    ...
+    print()
+    print("=== Runnning avg. 4 ===")
+    print("{0: <16} | {1:4d} | {2:4d} | {3:4d} | {4:4d}".format("milliseconds", 80, 160, 380, 400))
+    for action in actions:
+      print("{0: <16} | {1:.2f} | {2:.2f} | {3:.2f} | {4:.2f}".format( action,
+            running_average_4[action][1], running_average_4[action][3],
+            running_average_4[action][7], running_average_4[action][9] ))
 
-  Returns:
-    all_denormed: a list with nbatch entries. Each entry is an n-by-d matrix
-                  that corresponds to a denormalized sequence in Euler angles
-  """
-
-  all_denormed = []
-
-  for i in np.arange( data.shape[0] ):
-    denormed = data_utils.unNormalizeData(data[i,:,:], data_mean, data_std, dim_to_ignore, actions, one_hot )
-
-    for j in np.arange( denormed.shape[0] ):
-      for k in np.arange(3,97,3):
-        denormed[j,k:k+3] = data_utils.rotmat2euler( data_utils.expmap2rotmat( denormed[j,k:k+3] ))
-
-    all_denormed.append( denormed )
-
-  return all_denormed
 
 if __name__ == "__main__":
   main()
