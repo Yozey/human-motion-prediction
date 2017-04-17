@@ -35,8 +35,6 @@ tf.app.flags.DEFINE_float("max_gradient_norm", 5, "Clip gradients to this norm."
 tf.app.flags.DEFINE_float("dropout", 1, "Dropout keep probability for RNN layers.")
 tf.app.flags.DEFINE_integer("batch_size", 16, "Batch size to use during training.")
 tf.app.flags.DEFINE_integer("iterations", 20000, "Iterations to train for.")
-#tf.app.flags.DEFINE_integer("iterations", 50000, "Iterations to train for.")
-tf.app.flags.DEFINE_boolean("add_noise", False, "Whether to add noise (not implemented yet)")
 # Architecture
 tf.app.flags.DEFINE_string("architecture", "tied", "Seq2seq architecture to use.")
 tf.app.flags.DEFINE_integer("size", 1024, "Size of each model layer.")
@@ -88,7 +86,6 @@ train_dir = os.path.join( FLAGS.train_dir, FLAGS.action,
   'size_{0}'.format(FLAGS.size),
   #'dropout_{0}'.format(FLAGS.dropout),
   'lr_{0}'.format(FLAGS.learning_rate),
-  'add_noise' if FLAGS.add_noise else 'not_add_noise',
   'residual_vel' if FLAGS.residual_velocities else 'not_residual_vel',
   'residual_rnn' if FLAGS.residual_rnn else 'not_residual_rnn',
   'space_encoder' if FLAGS.space_encoder else 'not_space_encoder')
@@ -118,7 +115,6 @@ def create_model(session, actions, forward_only, sampling=False):
       FLAGS.use_lstm,
       FLAGS.residual_velocities,
       FLAGS.loss_velocities_weight,
-      FLAGS.add_noise,
       forward_only=forward_only,
       dtype=dtype)
 
@@ -175,21 +171,13 @@ def train():
 
     step_time, loss = 0, 0
 
-    noise_level    = 0.0
-    noise_schedule = [ 2500, 0.5e4, 1e4, 1.3e4, 2e4, 2.5e4, 3.3e4] if FLAGS.add_noise else []
-    noise_values   = [0.01, 0.05,  0.1, 0.2,   0.3, 0.5,   0.75 ] if FLAGS.add_noise else []
-
     for _ in xrange( FLAGS.iterations ):
 
       start_time = time.time()
 
-      # === Change the noise if requested ===
-      if current_step in noise_schedule:
-        noise_level = noise_values[ noise_schedule.index(current_step) ]
-
       # === Training step ===
       encoder_inputs, decoder_inputs, decoder_outputs = model.get_batch( train_set, not FLAGS.omit_one_hot )
-      _, step_loss, loss_summary, lr_summary = model.step( sess, encoder_inputs, decoder_inputs, decoder_outputs, FLAGS.dropout, noise_level, False )
+      _, step_loss, loss_summary, lr_summary = model.step( sess, encoder_inputs, decoder_inputs, decoder_outputs, FLAGS.dropout, False )
       model.train_writer.add_summary( loss_summary, current_step )
       model.train_writer.add_summary( lr_summary, current_step )
 

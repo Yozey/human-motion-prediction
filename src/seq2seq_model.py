@@ -57,7 +57,6 @@ class Seq2SeqModel(object):
                use_lstm=False,
                residual_velocities=False,
                loss_velocities_weight=1.0, # Weight to give to velocities
-               add_noise=False,
                forward_only=False,
                dtype=tf.float32):
     """Create the model.
@@ -77,9 +76,6 @@ class Seq2SeqModel(object):
       forward_only: if set, we do not construct the backward pass in the model.
       dtype: the data type to use to store internal variables.
     """
-
-
-    self.noise_level = tf.placeholder(tf.float32, name="noise_level")
 
     self.HUMAN_SIZE = 54
     self.input_size = self.HUMAN_SIZE + number_of_actions if one_hot else self.HUMAN_SIZE
@@ -134,12 +130,6 @@ class Seq2SeqModel(object):
       self.encoder_inputs = enc_in
       self.decoder_inputs = dec_in
       self.decoder_outputs = dec_out
-
-      if add_noise:
-        enc_in = enc_in[:, :, :self.HUMAN_SIZE] + tf.random_normal(
-                 [self.batch_size, source_seq_len-1, self.HUMAN_SIZE], mean=0.0, stddev=self.noise_level )
-        dec_in = dec_in[:, :, :self.HUMAN_SIZE] + tf.random_normal(
-                 [self.batch_size, target_seq_len, self.HUMAN_SIZE], mean=0.0, stddev=self.noise_level )
 
       enc_in = tf.transpose(enc_in, [1, 0, 2])
       dec_in = tf.transpose(dec_in, [1, 0, 2])
@@ -517,8 +507,7 @@ class Seq2SeqModel(object):
 
 
   def step(self, session, encoder_inputs, decoder_inputs, decoder_outputs,
-             dropout_keep_prob, noise_level,
-             forward_only, ashesh_seeds=False ):
+             dropout_keep_prob, forward_only, ashesh_seeds=False ):
     """Run a step of the model feeding the given inputs.
 
     Args:
@@ -541,8 +530,7 @@ class Seq2SeqModel(object):
     input_feed = {self.encoder_inputs: encoder_inputs,
                   self.decoder_inputs: decoder_inputs,
                   self.decoder_outputs: decoder_outputs,
-                  self.dropout_keep_prob: dropout_keep_prob,
-                  self.noise_level: noise_level}
+                  self.dropout_keep_prob: dropout_keep_prob}
 
     # Output feed: depends on whether we do a backward step or not.
     if not ashesh_seeds:
@@ -618,11 +606,6 @@ class Seq2SeqModel(object):
       encoder_inputs[i,:,0:self.input_size]  = data_sel[0:self.source_seq_len-1, :]
       decoder_inputs[i,:,0:self.input_size]  = data_sel[self.source_seq_len-1:self.source_seq_len+self.target_seq_len-1, :]
       decoder_outputs[i,:,0:self.input_size] = data_sel[self.source_seq_len:, 0:self.input_size]
-
-      # Add noise to the inputs if asked to do so
-      # if self.noise_level > 0:
-      #   encoder_inputs = encoder_inputs + (np.random.randn( *encoder_inputs.shape ) * self.noise_level)
-      #   decoder_inputs = decoder_inputs + (np.random.randn( *decoder_inputs.shape ) * self.noise_level)
 
     return encoder_inputs, decoder_inputs, decoder_outputs
 
@@ -704,10 +687,6 @@ class Seq2SeqModel(object):
       encoder_inputs[i, :, :]  = data_sel[0:source_seq_len-1, :]
       decoder_inputs[i, :, :]  = data_sel[source_seq_len-1:(source_seq_len+target_seq_len-1), :]
       decoder_outputs[i, :, :] = data_sel[source_seq_len:, :]
-
-      # Add noise to the inputs if asked to do so
-      # if self.noise_level > 0:
-      #   encoder_inputs = encoder_inputs + (np.random.randn( *encoder_inputs.shape ) * self.noise_level)
-      #   decoder_inputs = decoder_inputs + (np.random.randn( *decoder_inputs.shape ) * self.noise_level)
+      
 
     return encoder_inputs, decoder_inputs, decoder_outputs
