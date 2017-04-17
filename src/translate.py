@@ -45,7 +45,6 @@ tf.app.flags.DEFINE_boolean("omit_one_hot", False, "Whether to remove one-hot en
 #tf.app.flags.DEFINE_boolean("residual_velocities", False, "Add a residual connection that effectively models
 tf.app.flags.DEFINE_boolean("residual_velocities", False, "Add a residual connection that effectively models velocities")
 tf.app.flags.DEFINE_float("loss_velocities_weight", 0.0, "Weight to give to residual velocities")
-tf.app.flags.DEFINE_boolean("use_lstm", False, "Whether to use an LSTM or a GRU for recurrent units")
 # Directories
 tf.app.flags.DEFINE_string("data_dir", "./data/h3.6m/dataset", "Data directory")
 
@@ -80,7 +79,6 @@ train_dir = os.path.join( FLAGS.train_dir, FLAGS.action,
   FLAGS.architecture,
   FLAGS.loss_to_use,
   'omit_one_hot' if FLAGS.omit_one_hot else 'one_hot',
-  'lstm' if FLAGS.use_lstm else 'gru',
   'depth_{0}'.format(FLAGS.num_layers),
   'size_{0}'.format(FLAGS.size),
   'lr_{0}'.format(FLAGS.learning_rate),
@@ -110,7 +108,6 @@ def create_model(session, actions, forward_only, sampling=False):
       FLAGS.space_encoder,
       len( actions ),
       not FLAGS.omit_one_hot,
-      FLAGS.use_lstm,
       FLAGS.residual_velocities,
       FLAGS.loss_velocities_weight,
       forward_only=forward_only,
@@ -196,8 +193,7 @@ def train():
 
         encoder_inputs, decoder_inputs, decoder_outputs = model.get_batch( test_set, not FLAGS.omit_one_hot )
         step_loss, loss_summary = model.step(sess,
-            encoder_inputs, decoder_inputs, decoder_outputs,
-            noise_level, forward_only)
+            encoder_inputs, decoder_inputs, decoder_outputs, forward_only)
         val_loss = step_loss # Loss book-keeping
 
         model.test_writer.add_summary(loss_summary, current_step)
@@ -210,7 +206,7 @@ def train():
 
           encoder_inputs, decoder_inputs, decoder_outputs = model.get_batch_ashesh( test_set, action )
           ashesh_loss, ashesh_poses, _ = model.step(sess, encoder_inputs, decoder_inputs,
-                                                   decoder_outputs, 1.0, noise_level, True, True)
+                                                   decoder_outputs, True, True)
 
           # denormalizes too
           ashesh_pred_expmap = data_utils.revert_output_format( ashesh_poses,
@@ -466,13 +462,12 @@ def train():
               "Learning rate:       %.4f\n"
               "Step-time (ms):      %.4f\n"
               "Train loss avg:      %.4f\n"
-              "Noise value:         %.4f\n"
               "--------------------------\n"
               "Val loss:            %.4f\n"
               "Ashesh loss:         %.4f\n"
               "==========================" % (model.global_step.eval(),
               model.learning_rate.eval(), step_time*1000, loss,
-              noise_level, val_loss, ashesh_loss))
+              val_loss, ashesh_loss))
 
         # Decrease learning rate if no improvement was seen over last 3 times.
         # if len(previous_losses) > 2 and loss > max(previous_losses[-3:]):

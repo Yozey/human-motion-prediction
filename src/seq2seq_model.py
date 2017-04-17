@@ -54,7 +54,6 @@ class Seq2SeqModel(object):
                use_space_encoder,
                number_of_actions,
                one_hot=True,
-               use_lstm=False,
                residual_velocities=False,
                loss_velocities_weight=1.0, # Weight to give to velocities
                forward_only=False,
@@ -72,7 +71,6 @@ class Seq2SeqModel(object):
         changed after initialization if this is convenient, e.g., for decoding.
       learning_rate: learning rate to start with.
       learning_rate_decay_factor: decay learning rate by this much when needed.
-      use_lstm: if true, we use LSTM cells instead of GRU cells.
       forward_only: if set, we do not construct the backward pass in the model.
       dtype: the data type to use to store internal variables.
     """
@@ -80,7 +78,6 @@ class Seq2SeqModel(object):
     self.HUMAN_SIZE = 54
     self.input_size = self.HUMAN_SIZE + number_of_actions if one_hot else self.HUMAN_SIZE
 
-    print( "Use LSTM is %d" % use_lstm )
     print( "One hot is ", one_hot )
     print( "Input size is %d" % self.input_size )
 
@@ -98,11 +95,7 @@ class Seq2SeqModel(object):
 
     # === Create the RNN that will keep the state ===
     print('rnn_size = {0}'.format( rnn_size ))
-    if use_lstm: # might be an LSTM
-      single_cell = tf.contrib.rnn.LSTMCell(self.rnn_size,
-                    initializer = tf.random_uniform_initializer(minval=-0.04, maxval=0.04))
-    else: # or a GRU
-      single_cell = tf.contrib.rnn.GRUCell( self.rnn_size )
+    single_cell = tf.contrib.rnn.GRUCell( self.rnn_size )
 
     # Might have residual connection
     if residual_rnn:
