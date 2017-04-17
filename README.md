@@ -10,7 +10,7 @@ On human motion prediction using recurrent neural networks. CVPR 17.
 
 Our code runs under [Tensorflow](https://github.com/tensorflow/tensorflow/) 1.0 or later.
 
-The code in this repository was written by [una-dinosauria](https://github.com/una-dinosauria/).
+The code in this repository was written by [una-dinosauria](https://github.com/una-dinosauria/) and [libicocco](https://github.com/libicocco/) .
 
 ### Get this code and the data
 
@@ -56,7 +56,7 @@ If you use our code, please cite our work
 
 ### Acknowledgments
 
-The pre-processed human 3.6m dataset and some of our evaluation code was ported/adapted from [SRNN](https://github.com/asheshjain399/RNNexp/tree/srnn/structural_rnn) by [@asheshjain399](https://github.com/asheshjain399).
+The pre-processed human 3.6m dataset and some of our evaluation code (specially under `src/data_utils.py`) was ported/adapted from [SRNN](https://github.com/asheshjain399/RNNexp/tree/srnn/structural_rnn) by [@asheshjain399](https://github.com/asheshjain399).
 
 ### Licence
 MIT
