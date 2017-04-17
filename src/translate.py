@@ -66,7 +66,6 @@ tf.app.flags.DEFINE_integer("steps_per_checkpoint", 1000, "How many training ste
 tf.app.flags.DEFINE_integer("test_every", 100, "How often to compute error on the test set.")
 tf.app.flags.DEFINE_integer("save_every", 1000, "How often to compute error on the test set.")
 tf.app.flags.DEFINE_boolean("sample", False, "Set to True for sampling.")
-tf.app.flags.DEFINE_boolean("use_fp16", False, "Train using fp16 instead of fp32.")
 tf.app.flags.DEFINE_boolean("use_cpu", False, "Whether to use the CPU")
 tf.app.flags.DEFINE_integer("try_to_load", 0, "Try to load a previous checkpoint.")
 
@@ -91,7 +90,6 @@ summaries_dir = os.path.join( train_dir, "log" ) # Directory for TB summaries
 def create_model(session, actions, forward_only, sampling=False):
   """Create translation model and initialize or load parameters in session."""
 
-  dtype = tf.float16 if FLAGS.use_fp16 else tf.float32
   model = seq2seq_model.Seq2SeqModel(
       FLAGS.architecture,
       FLAGS.seq_length_in if not sampling else 50,
@@ -111,7 +109,7 @@ def create_model(session, actions, forward_only, sampling=False):
       FLAGS.residual_velocities,
       FLAGS.loss_velocities_weight,
       forward_only=forward_only,
-      dtype=dtype)
+      dtype=tf.float32)
 
   if FLAGS.try_to_load <= 0:
     print("Creating model with fresh parameters.")
