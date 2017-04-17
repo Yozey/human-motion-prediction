@@ -27,15 +27,17 @@ cd ..
 
 ### Baselines
 
-A major finding in our paper is that a set of simple baselines outperform the state of the art in human motion prediction. To reproduce these baseline results, run
+To reproduce the baseline results from our paper, run
 
-`python predict_motion.py --run_baselines`
+`python src/baselines.py`
 
-### Sequence-to-sequence training
+<!-- ### Sequence-to-sequence training
 
 You can also reproduce our results on all the actions of our strongest model by running
 
-`python predict_motion.py --multiaction --supervised`
+`python src/predict_motion.py --multiaction --supervised` -->
+
+
 
 ### Citing
 
@@ -49,6 +51,10 @@ If you use our code, please cite our work
   year={2017}
 }
 ```
+
+### Acknowledgments
+
+The pre-processed human 3.6m dataset and some of our evaluation code was ported/adapted from [SRNN](https://github.com/asheshjain399/RNNexp/tree/srnn/structural_rnn) by [@asheshjain399](https://github.com/asheshjain399).
 
 ### Licence
 MIT
