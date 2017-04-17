@@ -16,55 +16,6 @@ import seq2seq_model
 class Object(object):
     pass
 
-def last_frame_constant( ashesh_data, actions ):
-  """
-  Compute the error if we simply take the last input frame as a constant.
-
-  Args:
-    ashesh_data
-    actions
-
-  Returns:
-    errs: a dictionary where, for each action, we have a 100-long list with the
-          error at each point in time.
-  """
-
-  # Get how many batches we have
-  enc_in, dec_in, dec_out = ashesh_data[ actions[0] ]
-
-  n_sequences = len( enc_in )
-  seq_length_out = dec_out[0].shape[0]
-
-  errs = dict()
-
-  for action in actions:
-
-    # Make space for the error
-    errs[ action ] = np.zeros( (n_sequences, seq_length_out) )
-
-    # Get the lists for this action
-    enc_in, dec_in, dec_out = ashesh_data[action]
-
-    for i in np.arange( n_sequences ):
-
-      n, d = dec_out[i].shape
-
-      first_frame = dec_in[i][0, :]
-      first_frame[0:6] = 0
-
-      dec_out[i][:, 0:6] = 0
-
-      idx_to_use = np.where( np.std( dec_out[i], 0 ) > 1e-4 )[0]
-
-      ee = np.power( dec_out[i][:,idx_to_use] - first_frame[idx_to_use], 2 )
-      ee = np.sum( ee, 1 )
-      ee = np.sqrt( ee )
-      errs[ action ][i, :] = ee
-
-    errs[action] = np.mean( errs[action], 0 )
-
-  return errs
-
 def running_average( ashesh_data, actions, k ):
   """
   Compute the error if we take the average of the last k frames.
@@ -79,17 +30,14 @@ def running_average( ashesh_data, actions, k ):
           error at each point in time.
   """
 
-  if k == 1:
-    return last_frame_constant( ashesh_data, actions )
+  # if k == 1:
+    # return last_frame_constant( ashesh_data, actions )
 
   # Get how many batches we have
   enc_in, dec_in, dec_out = ashesh_data[ actions[0] ]
 
   n_sequences = len( enc_in )
   seq_length_out = dec_out[0].shape[0]
-
-  # print( n_sequences )
-  # print( seq_length_out )
 
   errs = dict()
 
@@ -105,15 +53,21 @@ def running_average( ashesh_data, actions, k ):
 
       n, d = dec_out[i].shape
 
-      first_frame = dec_in[i][0, :]
-      first_frame[0:6] = 0
+      # The last frame
+      last_frame = dec_in[i][0, :]
+      last_frame[0:6] = 0
 
-      # Get the last k frames
-      last_k = enc_in[i][(-k+1):, :]
-      assert( last_k.shape[0] == (k-1) )
+      # Get the last k-1 frames
+      if k > 1:
+        last_k = enc_in[i][(-k+1):, :]
+        # last_k = enc_in[i][-k:, :]
 
-      # Merge and average them
-      avg = np.mean( np.vstack( (last_k, first_frame) ), 0 )
+        assert( last_k.shape[0] == (k-1) )
+
+        # Merge and average them
+        avg = np.mean( np.vstack( (last_k, last_frame) ), 0 )
+      else:
+        avg = last_frame
 
       dec_out[i][:, 0:6] = 0
       idx_to_use = np.where( np.std( dec_out[i], 0 ) > 1e-4 )[0]
@@ -154,9 +108,12 @@ def denormalize_and_convert_to_euler( data, data_mean, data_std, dim_to_ignore, 
 
 
 def main():
-  actions = ["directions", "discussion", "eating", "greeting", "phoning",
-              "posing", "purchases", "sitting", "sittingdown", "smoking",
-              "takingphoto", "waiting", "walking", "walkingdog", "walkingtogether"]
+
+  actions = ["discussion", "eating", "smoking", "walking"]
+
+  # actions = ["directions", "discussion", "eating", "greeting", "phoning",
+  #             "posing", "purchases", "sitting", "sittingdown", "smoking",
+  #             "takingphoto", "waiting", "walking", "walkingdog", "walkingtogether"]
 
   one_hot = False
   FLAGS = Object()
@@ -174,7 +131,6 @@ def main():
   FLAGS.loss_to_use = "self_fed"
   FLAGS.residual_rnn = False
   FLAGS.space_encoder = False
-  # len( actions ),
   FLAGS.omit_one_hot = True,
   FLAGS.use_lstm = False,
   FLAGS.residual_velocities = False,
@@ -226,12 +182,12 @@ def main():
       ashesh_data[action] = (enc_in, dec_in, dec_out)
 
     # Compute baseline errors
-    errs_constant_frame = last_frame_constant( ashesh_data, actions )
+    errs_constant_frame = running_average( ashesh_data, actions, 1 )
     running_average_2   = running_average( ashesh_data, actions, 2 )
     running_average_4   = running_average( ashesh_data, actions, 4 )
 
     print()
-    print("=== Zero-velocity ===")
+    print("=== Zero-velocity (running avg. 1) ===")
     print("{0: <16} | {1:4d} | {2:4d} | {3:4d} | {4:4d}".format("milliseconds", 80, 160, 380, 400))
     for action in actions:
       print("{0: <16} | {1:.2f} | {2:.2f} | {3:.2f} | {4:.2f}".format( action,
