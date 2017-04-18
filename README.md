@@ -27,19 +27,33 @@ rm h3.6m.zip
 cd ..
 ```
 
-### Baselines
+### Running average baselines
 
-To reproduce the baseline results from our paper, run
+To reproduce the running average baseline results from our paper, run
 
 `python src/baselines.py`
 
-<!-- ### Sequence-to-sequence training
+### RNN models
 
-You can also reproduce our results on all the actions of our strongest model by running
+To train and reproduce the results of our models, use the following commands
 
-`python src/predict_motion.py --multiaction --supervised` -->
+| model      | arguments | notes |
+| ---        | ---       | ---   |
+| Sampling-based loss (SA) | `python src/translate.py --action walking` | Realistic long-term motion |
+| Residual (SA)            | `python src/translate.py --residual_velocities --action walking` |  |
+| Residual sup. (MA)       | `python src/translate.py --residual_velocities --learning_rate 0.005` | best quantitative |
 
+You can substitute the `--action walking` parameter for any action in 
 
+````
+["directions", "discussion", "eating", "greeting", "phoning",
+ "posing", "purchases", "sitting", "sittingdown", "smoking",
+ "takingphoto", "waiting", "walking", "walkingdog", "walkingtogether"]
+```
+
+### Visualization
+
+TODO
 
 ### Citing
 
@@ -64,4 +78,7 @@ MIT
 
 ### TODOS
 
-* Remove "ashesh" from variable and function name
+* Remove "ashesh" from variable and function names
+* Remove functions and variables that are not used
+* Check that all results reproduce
+
