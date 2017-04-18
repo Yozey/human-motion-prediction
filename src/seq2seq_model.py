@@ -125,8 +125,8 @@ class Seq2SeqModel(object):
 
     if loss_to_use == "supervised":
       pass
-    elif loss_to_use == "self_fed":
-      def lf(prev, i): # function for self-fed loss
+    elif loss_to_use == "sampling_based":
+      def lf(prev, i): # function for sampling_based loss
         return prev
     else:
       raise(ValueError, "unknown loss: %s" % loss_to_use)
