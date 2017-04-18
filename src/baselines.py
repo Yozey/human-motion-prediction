@@ -129,7 +129,6 @@ def main():
   FLAGS.residual_rnn = False
   FLAGS.space_encoder = False
   FLAGS.omit_one_hot = True,
-  FLAGS.use_lstm = False,
   FLAGS.residual_velocities = False,
   forward_only = False,
   dtype = tf.float32
@@ -153,7 +152,6 @@ def main():
         FLAGS.space_encoder,
         len( actions ),
         not FLAGS.omit_one_hot,
-        FLAGS.use_lstm,
         FLAGS.residual_velocities,
         forward_only=forward_only,
         dtype=dtype)
