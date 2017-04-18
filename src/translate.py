@@ -24,12 +24,9 @@ import tensorflow as tf
 import data_utils
 import seq2seq_model
 
-EXPLORERS = ["lewis", "dagama", "bly", "curiosity", "ada"]
-EXPLORERS.extend(["ada{0:02d}".format(i) for i in range(25)])
-
 # Learning
 tf.app.flags.DEFINE_float("learning_rate", .005, "Learning rate.")
-tf.app.flags.DEFINE_float("learning_rate_decay_factor", 1, "Learning rate is mulitplied by this much. 1 means no decay.")
+tf.app.flags.DEFINE_float("learning_rate_decay_factor", 1, "Learning rate is multiplied by this much. 1 means no decay.")
 tf.app.flags.DEFINE_integer("learning_rate_step", 1000, "Every this many steps, do decay.")
 tf.app.flags.DEFINE_float("max_gradient_norm", 5, "Clip gradients to this norm.")
 tf.app.flags.DEFINE_integer("batch_size", 16, "Batch size to use during training.")
@@ -47,13 +44,7 @@ tf.app.flags.DEFINE_boolean("residual_velocities", False, "Add a residual connec
 tf.app.flags.DEFINE_float("loss_velocities_weight", 0.0, "Weight to give to residual velocities")
 # Directories
 tf.app.flags.DEFINE_string("data_dir", "./data/h3.6m/dataset", "Data directory")
-
-if socket.gethostname() == "barqs" or socket.gethostname() == "bangla": # UBC machine
-  tf.app.flags.DEFINE_string("train_dir", "/home/julieta/Desktop/cvpr17_motion_prediction_experiments/", "Training directory.")
-elif socket.gethostname() in EXPLORERS: # UBC servers
-  error("Unimplemented")
-else: # MPI
-  tf.app.flags.DEFINE_string("train_dir", "/is/ps2/jmartinez2/Desktop/scratch/cvpr17_rebuttal_experiments/", "Training directory.")
+tf.app.flags.DEFINE_string("train_dir", "./log/", "Training directory.")
 
 tf.app.flags.DEFINE_string("action","all", "The action to train on. all means all the actions, all_periodic means walking, eating and smoking")
 tf.app.flags.DEFINE_string("loss_to_use","self_fed", "The type of loss to use, supervised or self_fed")
@@ -111,7 +102,7 @@ def create_model(session, actions, forward_only, sampling=False):
 
   if FLAGS.try_to_load <= 0:
     print("Creating model with fresh parameters.")
-    session.run(tf.initialize_all_variables())
+    session.run(tf.global_variables_initializer())
     return model
 
   ckpt_path = os.path.join( train_dir, "checkpoint-{0}".format(FLAGS.try_to_load) )
