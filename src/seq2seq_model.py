@@ -599,16 +599,16 @@ class Seq2SeqModel(object):
     frames['discussion'] = [1426, 2063, 1398, 1087, 1180, 1145, 332,  1438]
 
     # The ones we were missing
-    frames['directions'] = [2299, 30, 1106, 625, 1829, 83, 1801, 170]
-    frames['greeting'] = [422, 964, 138, 622, 234, 105, 216, 1344]
-    frames['phoning'] = [844, 319, 324, 514, 685, 204, 1349, 241]
-    frames['posing'] = [630, 23, 369, 722, 868, 595, 440, 174]
-    frames['purchases'] = [1087, 109, 386, 210, 700, 498, 1009, 1129]
-    frames['sitting'] = [150, 890, 508, 925, 517, 1334, 1571, 1354]
+    frames['directions']  = [2299, 30, 1106, 625, 1829, 83, 1801, 170]
+    frames['greeting']    = [422, 964, 138, 622, 234, 105, 216, 1344]
+    frames['phoning']     = [844, 319, 324, 514, 685, 204, 1349, 241]
+    frames['posing']      = [630, 23, 369, 722, 868, 595, 440, 174]
+    frames['purchases']   = [1087, 109, 386, 210, 700, 498, 1009, 1129]
+    frames['sitting']     = [150, 890, 508, 925, 517, 1334, 1571, 1354]
     frames['sittingdown'] = [2009, 1115, 81, 1428, 1493, 1412, 111, 594]
     frames['takingphoto'] = [222, 480, 496, 166, 1431, 556, 550, 681]
-    frames['waiting'] = [451, 1383, 1476, 1727, 1393, 482, 1465, 1900]
-    frames['walkingdog'] = [600, 486, 534, 278, 79, 341, 773, 541]
+    frames['waiting']     = [451, 1383, 1476, 1727, 1393, 482, 1465, 1900]
+    frames['walkingdog']  = [600, 486, 534, 278, 79, 341, 773, 541]
     frames['walkingtogether'] = [473, 875, 203, 1296, 1065, 489, 528, 1247]
 
     # Create the actual seed object

@@ -163,7 +163,9 @@ def train():
       model.train_writer.add_summary( loss_summary, current_step )
       model.train_writer.add_summary( lr_summary, current_step )
 
-      print("step {0:04d}; step_loss: {1:04f};".format(current_step, step_loss ))
+      if current_step % 10 == 0:
+        print("step {0:04d}; step_loss: {1:.4f}".format(current_step, step_loss ))
+
       step_time += (time.time() - start_time) / FLAGS.test_every
       loss += step_loss / FLAGS.test_every
       current_step += 1
@@ -185,11 +187,17 @@ def train():
 
         model.test_writer.add_summary(loss_summary, current_step)
 
+        print()
+        print("{0: <16} |".format("milliseconds"), end="")
+        for ms in [80, 160, 320, 400, 560, 1000]:
+          print(" {0:5d} |".format(ms), end="")
+        print()
+
         # === Validation with Ashesh's seeds ===
         for action in actions:
 
-          #if action not in ["walking", "eating", "smoking", "discussion"]:
-          #  continue
+          if action not in ['walking', 'eating', 'smoking', 'discussion']:
+            continue
 
           encoder_inputs, decoder_inputs, decoder_outputs = model.get_batch_ashesh( test_set, action )
           ashesh_loss, ashesh_poses, _ = model.step(sess, encoder_inputs, decoder_inputs,
@@ -225,7 +233,16 @@ def train():
 
 
           mean_mean_errors = np.mean( mean_errors, 0 )
-          print( action, mean_mean_errors )
+          # print( action, mean_mean_errors )
+
+          print("{0: <16} |".format(action), end="")
+          for ms in [1,3,7,9,13,24]:
+            if FLAGS.seq_length_out >= ms+1:
+              print(" {0:.3f} |".format( mean_mean_errors[ms] ), end="")
+            else:
+              print("   n/a |", end="")
+          print()
+
           #print( action, mean_mean_errors[[1,3,7,13,24]] )
           # Simply set the errors to log in TB
 
@@ -444,6 +461,7 @@ def train():
             model.test_writer.add_summary(summaries[i], current_step)
 
 
+        print()
         print("==========================\n"
               "Global step:         %d\n"
               "Learning rate:       %.4f\n"
@@ -455,6 +473,7 @@ def train():
               "==========================" % (model.global_step.eval(),
               model.learning_rate.eval(), step_time*1000, loss,
               val_loss, ashesh_loss))
+        print()
 
         # Decrease learning rate if no improvement was seen over last 3 times.
         # if len(previous_losses) > 2 and loss > max(previous_losses[-3:]):
@@ -465,7 +484,7 @@ def train():
         if current_step % FLAGS.save_every == 0:
           print( "Saving the model..." ); start_time = time.time()
           model.saver.save(sess, os.path.join(train_dir, 'checkpoint'), global_step=current_step )
-          print( "done in {0} ms".format(time.time() - start_time) )
+          print( "done in {0:.2f} ms".format( (time.time() - start_time)*1000) )
 
         # Reset global time and loss
         step_time, loss = 0, 0
