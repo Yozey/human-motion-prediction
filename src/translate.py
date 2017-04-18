@@ -41,7 +41,7 @@ tf.app.flags.DEFINE_string("data_dir", "./data/h3.6m/dataset", "Data directory")
 tf.app.flags.DEFINE_string("train_dir", "./log/", "Training directory.")
 
 tf.app.flags.DEFINE_string("action","all", "The action to train on. all means all the actions, all_periodic means walking, eating and smoking")
-tf.app.flags.DEFINE_string("loss_to_use","self_fed", "The type of loss to use, supervised or self_fed")
+tf.app.flags.DEFINE_string("loss_to_use","sampling_based", "The type of loss to use, supervised or sampling_based")
 
 tf.app.flags.DEFINE_integer("steps_per_checkpoint", 1000, "How many training steps to do per checkpoint.")
 tf.app.flags.DEFINE_integer("test_every", 100, "How often to compute error on the test set.")
@@ -78,7 +78,7 @@ def create_model(session, actions, forward_only, sampling=False):
       FLAGS.learning_rate,
       FLAGS.learning_rate_decay_factor,
       summaries_dir,
-      FLAGS.loss_to_use if not sampling else "self_fed",
+      FLAGS.loss_to_use if not sampling else "sampling_based",
       len( actions ),
       not FLAGS.omit_one_hot,
       FLAGS.residual_velocities,
@@ -182,6 +182,7 @@ def train():
         # === Validation with srnn's seeds ===
         for action in actions:
 
+          # NOTE Uncomment this line to see errors in all actions
           if action not in ['walking', 'eating', 'smoking', 'discussion']:
             continue
 
@@ -200,7 +201,9 @@ def train():
           mean_errors = np.zeros( (len(srnn_pred_expmap), srnn_pred_expmap[0].shape[0]) )
 
           for i in np.arange(8):
-            # TODO see if we need this reverse coordinate thing
+
+            # We dp not need this reverse coordinate thing, as error in global
+            # rotation/translation is not accounted for.
             #srnn_pred_expmap, _, _ = data_utils.revert_coordinate_space( srnn_pred_expmap[0], R0, T0 )
             eulerchannels_pred = srnn_pred_expmap[i]
 
@@ -217,9 +220,7 @@ def train():
             euc_error = np.sqrt( euc_error )
             mean_errors[i,:] = euc_error
 
-
           mean_mean_errors = np.mean( mean_errors, 0 )
-          # print( action, mean_mean_errors )
 
           print("{0: <16} |".format(action), end="")
           for ms in [1,3,7,9,13,24]:
@@ -229,9 +230,7 @@ def train():
               print("   n/a |", end="")
           print()
 
-          #print( action, mean_mean_errors[[1,3,7,13,24]] )
-          # Simply set the errors to log in TB
-
+          # Ugly massive if-then to log the error to tensorboard ¯\_(ツ)_/¯
           if action == "walking":
             summaries = sess.run(
               [model.walking_err80_summary,
@@ -461,7 +460,7 @@ def train():
               val_loss, srnn_loss))
         print()
 
-        # Decrease learning rate if no improvement was seen over last 3 times.
+        # TODO Decrease learning rate if no improvement over last 3 iters.
         # if len(previous_losses) > 2 and loss > max(previous_losses[-3:]):
         #   sess.run(model.learning_rate_decay_op)
         previous_losses.append(loss)
