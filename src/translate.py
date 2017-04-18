@@ -480,26 +480,30 @@ def train():
 
 def get_srnn_gts( actions, model, test_set, data_mean, data_std, dim_to_ignore, one_hot ):
   """
-  Get the ground truths for asheh's seeds
+  Get the ground truths for srnn's sequences, and convert to Euler angles.
+  (the error is always computed in Euler angles).
 
-  Args:
-    actions: a list of actions to get ground truths for
+  Args
+    actions: a list of actions to get ground truths for.
+    model: training model we are using (we only use the "get_batch" method).
+    test_set: dictionary with normalized training data.
+    data_mean: d-long vector with the mean of the training data.
+    data_std: d-long vector with the standard deviation of the training data.
+    dim_to_ignore: dimensions that we are not using to train/predict.
+    one_hot: whether the data comes with one-hot encoding indicating action.
 
-  Returns:
+  Returns
     srnn_gts_euler: a dictionary where the keys are actions, and the values
-      are the ground_truth, denormalized expected outputs of asheh's seeds.
+      are the ground_truth, denormalized expected outputs of srnns's seeds.
   """
-
   srnn_gts_euler = {}
 
   for action in actions:
 
-    #if action not in ["walking", "eating", "smoking", "discussion"]:
-    #  continue
-
     srnn_gt_euler = []
     _, _, srnn_expmap = model.get_batch_srnn( test_set, action )
 
+    # expmap -> rotmat -> euler
     for i in np.arange( srnn_expmap.shape[0] ):
       denormed = data_utils.unNormalizeData(srnn_expmap[i,:,:], data_mean, data_std, dim_to_ignore, actions, one_hot )
 
