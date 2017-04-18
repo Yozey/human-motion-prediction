@@ -13,12 +13,9 @@ import random
 import sys
 import time
 import h5py
-import socket
-
-import cPickle
 
 import numpy as np
-from six.moves import xrange  # pylint: disable=redefined-builtin
+from six.moves import xrange # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 import data_utils
@@ -191,7 +188,7 @@ def train():
           if action not in ['walking', 'eating', 'smoking', 'discussion']:
             continue
 
-          encoder_inputs, decoder_inputs, decoder_outputs = model.get_batch_ashesh( test_set, action )
+          encoder_inputs, decoder_inputs, decoder_outputs = model.get_batch_srnn( test_set, action )
           ashesh_loss, ashesh_poses, _ = model.step(sess, encoder_inputs, decoder_inputs,
                                                    decoder_outputs, True, True)
 
@@ -504,7 +501,7 @@ def get_ashesh_gts( actions, model, test_set, data_mean, data_std, dim_to_ignore
     #  continue
 
     ashesh_gt_euler = []
-    _, _, ashesh_expmap = model.get_batch_ashesh( test_set, action )
+    _, _, ashesh_expmap = model.get_batch_srnn( test_set, action )
 
     for i in np.arange( ashesh_expmap.shape[0] ):
       denormed = data_utils.unNormalizeData(ashesh_expmap[i,:,:], data_mean, data_std, dim_to_ignore, actions, one_hot )
@@ -561,7 +558,7 @@ def sample():
         continue
 
       # Make prediction with Ashesh' seeds
-      encoder_inputs, decoder_inputs, decoder_outputs = model.get_batch_ashesh( test_set, action )
+      encoder_inputs, decoder_inputs, decoder_outputs = model.get_batch_srnn( test_set, action )
       ashesh_loss, ashesh_poses, _ = model.step(sess, encoder_inputs, decoder_inputs, decoder_outputs, 1.0, 0.0, True, True)
 
       # denormalizes too
@@ -608,23 +605,21 @@ def sample():
 
 def define_actions( action ):
 
-  if action in ["directions", "discussion", "eating", "greeting", "phoning",
-              "posing", "purchases", "sitting", "sittingdown", "smoking",
-              "takingphoto", "waiting", "walking", "walkingdog", "walkingtogether"]:
-    actions = [action]
-  elif action == "all":
-    actions = ["directions", "discussion", "eating", "greeting", "phoning",
-                "posing", "purchases", "sitting", "sittingdown", "smoking",
-                "takingphoto", "waiting", "walking", "walkingdog", "walkingtogether"]
-  elif action == "all_ashesh":
-    actions = ["walking", "eating", "smoking", "discussion"]
-  elif action == "all_periodic":
-    actions = ["walking", "eating", "smoking"]
-  else:
-    raise( ValueError, "Unrecognized action: %d" % action )
+  actions = ["walking", "eating", "smoking", "discussion",  "directions",
+              "greeting", "phoning", "posing", "purchases", "sitting",
+              "sittingdown", "takingphoto", "waiting", "walkingdog",
+              "walkingtogether"]
 
-  return actions
+  if action in actions:
+    return [action]
 
+  if action == "all":
+    return actions
+
+  if action == "all_srnn":
+    return ["walking", "eating", "smoking", "discussion"]
+
+  raise( ValueError, "Unrecognized action: %d" % action )
 
 def read_all_data( actions, seq_length_in, seq_length_out, data_dir, one_hot ):
   """Load data for training and normalizes it

@@ -176,7 +176,8 @@ class Seq2SeqModel(object):
     params = tf.trainable_variables()
 
     opt = tf.train.GradientDescentOptimizer( self.learning_rate )
-    #opt = tf.train.AdamOptimizer( self.learning_rate )
+    # opt = tf.train.MomentumOptimizer( self.learning_rate, 0.9 )
+    # opt = tf.train.AdamOptimizer( self.learning_rate )
 
     # Update all the trainable parameters
     gradients = tf.gradients( self.loss, params )
@@ -570,7 +571,7 @@ class Seq2SeqModel(object):
     total_frames = source_seq_len + target_seq_len
 
     # Trying to reproduce SRNN's sequence cherry-picking as done in
-    # https://github.com/libicocco/RNNexp/blob/master/structural_rnn/CRFProblems/H3.6m/processdata.py#L343
+    # https://github.com/asheshjain399/RNNexp/blob/master/structural_rnn/CRFProblems/H3.6m/processdata.py#L343
     for i in xrange( batch_size ):
 
       _, subsequence, idx = seeds[i]
