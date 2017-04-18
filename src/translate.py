@@ -1,8 +1,6 @@
 
-"""Simple code for training an RNN for motion prediction.
+"""Simple code for training an RNN for motion prediction."""
 
-See the paper at http://arxiv.org/abs/1409.3215 for more information
-"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
