@@ -39,9 +39,12 @@ To train and reproduce the results of our models, use the following commands
 
 | model      | arguments | notes |
 | ---        | ---       | ---   |
-| Sampling-based loss (SA) | `python src/translate.py --action walking` | Realistic long-term motion |
+| Sampling-based loss (SA) | `python src/translate.py --action walking --seq_length_out 25` | Realistic long-term motion, loss over 1 second |
 | Residual (SA)            | `python src/translate.py --residual_velocities --action walking` |  |
+| Residual sup. (MA)       | `python src/translate.py --residual_velocities --learning_rate 0.005 --omit_one_hot` |  |
 | Residual sup. (MA)       | `python src/translate.py --residual_velocities --learning_rate 0.005` | best quantitative |
+| Untied       | `python src/translate.py --residual_velocities --learning_rate 0.005 --architecture basic` |  |
+
 
 You can substitute the `--action walking` parameter for any action in 
 
@@ -50,6 +53,8 @@ You can substitute the `--action walking` parameter for any action in
  "posing", "purchases", "sitting", "sittingdown", "smoking",
  "takingphoto", "waiting", "walking", "walkingdog", "walkingtogether"]
 ```
+
+or `--action all` (default) to train on all actions.
 
 ### Visualization
 
