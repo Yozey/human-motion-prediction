@@ -43,7 +43,6 @@ tf.app.flags.DEFINE_string("train_dir", "./log/", "Training directory.")
 tf.app.flags.DEFINE_string("action","all", "The action to train on. all means all the actions, all_periodic means walking, eating and smoking")
 tf.app.flags.DEFINE_string("loss_to_use","self_fed", "The type of loss to use, supervised or self_fed")
 
-
 tf.app.flags.DEFINE_integer("steps_per_checkpoint", 1000, "How many training steps to do per checkpoint.")
 tf.app.flags.DEFINE_integer("test_every", 100, "How often to compute error on the test set.")
 tf.app.flags.DEFINE_integer("save_every", 1000, "How often to compute error on the test set.")
@@ -96,7 +95,7 @@ def create_model(session, actions, forward_only, sampling=False):
   print( ckpt_path )
   if os.path.exists( ckpt_path ):
     print("Reading model parameters from %s" % ckpt_path)
-    model.saver.restore(session, ckpt_path )
+    model.saver.restore( session, ckpt_path )
   else:
     print("Could not find checkpoint. Aborting.")
     raise( ValueError, "Checkpoint does not seem to exist" )
@@ -601,7 +600,17 @@ def sample():
 
   return
 
+
 def define_actions( action ):
+  """
+  Define the list of actions we are using.
+
+  Args
+    action: String with the passed action. Could be "all".
+
+  Returns
+    actions: List of strings of actions.
+  """
 
   actions = ["walking", "eating", "smoking", "discussion",  "directions",
               "greeting", "phoning", "posing", "purchases", "sitting",
@@ -619,23 +628,25 @@ def define_actions( action ):
 
   raise( ValueError, "Unrecognized action: %d" % action )
 
+
 def read_all_data( actions, seq_length_in, seq_length_out, data_dir, one_hot ):
-  """Load data for training and normalizes it
+  """
+  Load data for training/testing and normalizes it.
 
-  Input
-    actions: a list of actions that we are dealing with
-    seq_length_in: Number of frames to use in the burn-in sequence
-    seq_length_out: Number of frames to use in the output sequence
-    data_dir: Where to load the data from
-    one_hot: whether to use one-hot encoding
+  Args
+    actions: List of actions that we are dealing with.
+    seq_length_in: Number of frames to use in the burn-in sequence.
+    seq_length_out: Number of frames to use in the output sequence.
+    data_dir: Where to load the data from.
+    one_hot: whether to use one-hot encoding.
 
-  Output
-    train_set:
-    test_set:
-    data_mean:
-    data_std:
-    dim_to_ignore:
-    dim_to_use:
+  Returns
+    train_set: Dictionary with normalized training data.
+    test_set: Dictionary with test data.
+    data_mean: d-long vector with the mean of the training data.
+    data_std: d-long vector with the standard dev of the training data.
+    dim_to_ignore: Dimensions that are not used becaused stdev is too small.
+    dim_to_use: Dimensions that we are actually using in the model.
   """
 
   # === Read training data ===
