@@ -127,9 +127,9 @@ def train():
     model.train_writer.add_graph( sess.graph )
     print( "Model created" )
 
-    # === Read and denormalize the gt with Ashesh's seeds, as we'll need them
+    # === Read and denormalize the gt with srnn's seeds, as we'll need them
     # many times for evaluation in Euler Angles ===
-    ashesh_gts_euler = get_ashesh_gts( actions, model, test_set, data_mean,
+    srnn_gts_euler = get_srnn_gts( actions, model, test_set, data_mean,
                               data_std, dim_to_ignore, not FLAGS.omit_one_hot )
 
     #=== This is the training loop ===
@@ -179,30 +179,30 @@ def train():
           print(" {0:5d} |".format(ms), end="")
         print()
 
-        # === Validation with Ashesh's seeds ===
+        # === Validation with srnn's seeds ===
         for action in actions:
 
           if action not in ['walking', 'eating', 'smoking', 'discussion']:
             continue
 
           encoder_inputs, decoder_inputs, decoder_outputs = model.get_batch_srnn( test_set, action )
-          ashesh_loss, ashesh_poses, _ = model.step(sess, encoder_inputs, decoder_inputs,
+          srnn_loss, srnn_poses, _ = model.step(sess, encoder_inputs, decoder_inputs,
                                                    decoder_outputs, True, True)
 
           # denormalizes too
-          ashesh_pred_expmap = data_utils.revert_output_format( ashesh_poses,
+          srnn_pred_expmap = data_utils.revert_output_format( srnn_poses,
             data_mean, data_std, dim_to_ignore, actions, not FLAGS.omit_one_hot )
 
           R0 = np.eye(3)
           T0 = np.zeros(3)
 
           # Save the errors here
-          mean_errors = np.zeros( (len(ashesh_pred_expmap), ashesh_pred_expmap[0].shape[0]) )
+          mean_errors = np.zeros( (len(srnn_pred_expmap), srnn_pred_expmap[0].shape[0]) )
 
           for i in np.arange(8):
             # TODO see if we need this reverse coordinate thing
-            #ashesh_pred_expmap, _, _ = data_utils.revert_coordinate_space( ashesh_pred_expmap[0], R0, T0 )
-            eulerchannels_pred = ashesh_pred_expmap[i]
+            #srnn_pred_expmap, _, _ = data_utils.revert_coordinate_space( srnn_pred_expmap[0], R0, T0 )
+            eulerchannels_pred = srnn_pred_expmap[i]
 
             for j in np.arange( eulerchannels_pred.shape[0] ):
               for k in np.arange(3,97,3):
@@ -212,7 +212,7 @@ def train():
             eulerchannels_pred[:,0:6] = 0
             idx_to_use = np.where( np.std( eulerchannels_pred, 0 ) > 1e-4 )[0]
 
-            euc_error = np.power( ashesh_gts_euler[action][i][:,idx_to_use] - eulerchannels_pred[:,idx_to_use], 2)
+            euc_error = np.power( srnn_gts_euler[action][i][:,idx_to_use] - eulerchannels_pred[:,idx_to_use], 2)
             euc_error = np.sum(euc_error, 1)
             euc_error = np.sqrt( euc_error )
             mean_errors[i,:] = euc_error
@@ -455,10 +455,10 @@ def train():
               "Train loss avg:      %.4f\n"
               "--------------------------\n"
               "Val loss:            %.4f\n"
-              "Ashesh loss:         %.4f\n"
+              "srnn loss:         %.4f\n"
               "==========================" % (model.global_step.eval(),
               model.learning_rate.eval(), step_time*1000, loss,
-              val_loss, ashesh_loss))
+              val_loss, srnn_loss))
         print()
 
         # Decrease learning rate if no improvement was seen over last 3 times.
@@ -478,7 +478,7 @@ def train():
         sys.stdout.flush()
 
 
-def get_ashesh_gts( actions, model, test_set, data_mean, data_std, dim_to_ignore, one_hot ):
+def get_srnn_gts( actions, model, test_set, data_mean, data_std, dim_to_ignore, one_hot ):
   """
   Get the ground truths for asheh's seeds
 
@@ -486,37 +486,37 @@ def get_ashesh_gts( actions, model, test_set, data_mean, data_std, dim_to_ignore
     actions: a list of actions to get ground truths for
 
   Returns:
-    ashesh_gts_euler: a dictionary where the keys are actions, and the values
+    srnn_gts_euler: a dictionary where the keys are actions, and the values
       are the ground_truth, denormalized expected outputs of asheh's seeds.
   """
 
-  ashesh_gts_euler = {}
+  srnn_gts_euler = {}
 
   for action in actions:
 
     #if action not in ["walking", "eating", "smoking", "discussion"]:
     #  continue
 
-    ashesh_gt_euler = []
-    _, _, ashesh_expmap = model.get_batch_srnn( test_set, action )
+    srnn_gt_euler = []
+    _, _, srnn_expmap = model.get_batch_srnn( test_set, action )
 
-    for i in np.arange( ashesh_expmap.shape[0] ):
-      denormed = data_utils.unNormalizeData(ashesh_expmap[i,:,:], data_mean, data_std, dim_to_ignore, actions, one_hot )
+    for i in np.arange( srnn_expmap.shape[0] ):
+      denormed = data_utils.unNormalizeData(srnn_expmap[i,:,:], data_mean, data_std, dim_to_ignore, actions, one_hot )
 
       for j in np.arange( denormed.shape[0] ):
         for k in np.arange(3,97,3):
           denormed[j,k:k+3] = data_utils.rotmat2euler( data_utils.expmap2rotmat( denormed[j,k:k+3] ))
 
-      ashesh_gt_euler.append( denormed );
+      srnn_gt_euler.append( denormed );
 
     # Put back in the dictionary
-    ashesh_gts_euler[action] = ashesh_gt_euler
+    srnn_gts_euler[action] = srnn_gt_euler
 
-  return ashesh_gts_euler
+  return srnn_gts_euler
 
 
 def sample():
-  """Sample predictions for ashesh's seeds"""
+  """Sample predictions for srnn's seeds"""
 
   if FLAGS.try_to_load <= 0:
     raise( ValueError, "Must give an iteration to read parameters from")
@@ -539,9 +539,9 @@ def sample():
     train_set, test_set, data_mean, data_std, dim_to_ignore, dim_to_use = read_all_data(
       actions, FLAGS.seq_length_in, FLAGS.seq_length_out, FLAGS.data_dir, not FLAGS.omit_one_hot )
 
-    # === Read and denormalize the gt with Ashesh's seeds, as we'll need them
+    # === Read and denormalize the gt with srnn's seeds, as we'll need them
     # many times for evaluation in Euler Angles ===
-    ashesh_gts_euler = get_ashesh_gts( actions, model, test_set, data_mean,
+    srnn_gts_euler = get_srnn_gts( actions, model, test_set, data_mean,
                               data_std, dim_to_ignore, not FLAGS.omit_one_hot )
 
     try:
@@ -554,27 +554,27 @@ def sample():
       if action not in ["walking", "eating", "smoking", "discussion"]:
         continue
 
-      # Make prediction with Ashesh' seeds
+      # Make prediction with srnn' seeds
       encoder_inputs, decoder_inputs, decoder_outputs = model.get_batch_srnn( test_set, action )
-      ashesh_loss, ashesh_poses, _ = model.step(sess, encoder_inputs, decoder_inputs, decoder_outputs, 1.0, 0.0, True, True)
+      srnn_loss, srnn_poses, _ = model.step(sess, encoder_inputs, decoder_inputs, decoder_outputs, 1.0, 0.0, True, True)
 
       # denormalizes too
-      ashesh_pred_expmap = data_utils.revert_output_format( ashesh_poses, data_mean, data_std, dim_to_ignore, actions, not FLAGS.omit_one_hot )
+      srnn_pred_expmap = data_utils.revert_output_format( srnn_poses, data_mean, data_std, dim_to_ignore, actions, not FLAGS.omit_one_hot )
 
       # Save the sample
       with h5py.File( os.path.join(train_dir, 'samples_full.h5'), 'a' ) as hf:
         for i in np.arange(8):
-          eulerchannels_pred = ashesh_pred_expmap[i]
+          eulerchannels_pred = srnn_pred_expmap[i]
           node_name = 'seeds_expmap/{1}_{0}'.format(i, action)
           hf.create_dataset( node_name, data=eulerchannels_pred )
 
       # Compute and save the errors here
-      mean_errors = np.zeros( (len(ashesh_pred_expmap), ashesh_pred_expmap[0].shape[0]) )
+      mean_errors = np.zeros( (len(srnn_pred_expmap), srnn_pred_expmap[0].shape[0]) )
 
       for i in np.arange(8):
         # TODO see if we need this reverse coordinate thing
-        #ashesh_pred_expmap, _, _ = data_utils.revert_coordinate_space( ashesh_pred_expmap[0], R0, T0 )
-        eulerchannels_pred = ashesh_pred_expmap[i]
+        #srnn_pred_expmap, _, _ = data_utils.revert_coordinate_space( srnn_pred_expmap[0], R0, T0 )
+        eulerchannels_pred = srnn_pred_expmap[i]
 
         for j in np.arange( eulerchannels_pred.shape[0] ):
           for k in np.arange(3,97,3):
@@ -584,7 +584,7 @@ def sample():
         eulerchannels_pred[:,0:6] = 0
         idx_to_use = np.where( np.std( eulerchannels_pred, 0 ) > 1e-4 )[0]
 
-        euc_error = np.power( ashesh_gts_euler[action][i][:,idx_to_use] - eulerchannels_pred[:,idx_to_use], 2)
+        euc_error = np.power( srnn_gts_euler[action][i][:,idx_to_use] - eulerchannels_pred[:,idx_to_use], 2)
         euc_error = np.sum(euc_error, 1)
         euc_error = np.sqrt( euc_error )
         mean_errors[i,:] = euc_error
