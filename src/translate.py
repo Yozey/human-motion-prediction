@@ -230,7 +230,7 @@ def train():
               print("   n/a |", end="")
           print()
 
-          # Ugly massive if-then to log the error to tensorboard ¯\_(ツ)_/¯
+          # Ugly massive if-then to log the error to tensorboard :shrug:
           if action == "walking":
             summaries = sess.run(
               [model.walking_err80_summary,
