@@ -126,7 +126,6 @@ def main():
   FLAGS.learning_rate_decay_factor = 1
   summaries_dir = "./log/"
   FLAGS.loss_to_use = "self_fed"
-  FLAGS.space_encoder = False
   FLAGS.omit_one_hot = True,
   FLAGS.residual_velocities = False,
   forward_only = False,
@@ -147,7 +146,6 @@ def main():
         FLAGS.learning_rate_decay_factor,
         summaries_dir,
         FLAGS.loss_to_use,
-        FLAGS.space_encoder,
         len( actions ),
         not FLAGS.omit_one_hot,
         FLAGS.residual_velocities,

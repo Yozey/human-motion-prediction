@@ -47,7 +47,6 @@ tf.app.flags.DEFINE_string("train_dir", "./log/", "Training directory.")
 
 tf.app.flags.DEFINE_string("action","all", "The action to train on. all means all the actions, all_periodic means walking, eating and smoking")
 tf.app.flags.DEFINE_string("loss_to_use","self_fed", "The type of loss to use, supervised or self_fed")
-tf.app.flags.DEFINE_boolean("space_encoder", False, "Whether to use an encoder in space")
 
 
 tf.app.flags.DEFINE_integer("steps_per_checkpoint", 1000, "How many training steps to do per checkpoint.")
@@ -67,8 +66,7 @@ train_dir = os.path.join( FLAGS.train_dir, FLAGS.action,
   'depth_{0}'.format(FLAGS.num_layers),
   'size_{0}'.format(FLAGS.size),
   'lr_{0}'.format(FLAGS.learning_rate),
-  'residual_vel' if FLAGS.residual_velocities else 'not_residual_vel',
-  'space_encoder' if FLAGS.space_encoder else 'not_space_encoder')
+  'residual_vel' if FLAGS.residual_velocities else 'not_residual_vel')
 
 summaries_dir = os.path.join( train_dir, "log" ) # Directory for TB summaries
 
@@ -87,7 +85,6 @@ def create_model(session, actions, forward_only, sampling=False):
       FLAGS.learning_rate_decay_factor,
       summaries_dir,
       FLAGS.loss_to_use if not sampling else "self_fed",
-      FLAGS.space_encoder,
       len( actions ),
       not FLAGS.omit_one_hot,
       FLAGS.residual_velocities,

@@ -36,7 +36,6 @@ class Seq2SeqModel(object):
                learning_rate_decay_factor,
                summaries_dir,
                loss_to_use,
-               use_space_encoder,
                number_of_actions,
                one_hot=True,
                residual_velocities=False,
@@ -111,10 +110,7 @@ class Seq2SeqModel(object):
       dec_in = tf.split(dec_in, target_seq_len, axis=0)
       dec_out = tf.split(dec_out, target_seq_len, axis=0)
 
-    # === Add space encoders and decoders ===
-    if use_space_encoder:
-      cell = rnn_cell_extensions.LinearSpaceEncoderWrapper( cell, self.input_size )
-
+    # === Add space decoder ===
     cell = rnn_cell_extensions.LinearSpaceDecoderWrapper( cell, self.input_size )
 
     # Finally, wrap everything in a residual layer if we want to model velocities
@@ -410,33 +406,6 @@ class Seq2SeqModel(object):
       self.walkingtogether_err1000_summary = tf.summary.scalar( 'euler_error_walkingtogether/ashesh_seeds_1000', self.walkingtogether_err1000 )
 
     self.saver = tf.train.Saver( tf.global_variables(), max_to_keep=10 )
-
-  def linear_space_encoder( self, inputs, dtype, scope=None ):
-    """
-    Creates all the operations that we want to apply to the input before passing
-    it to the stack of rnns.
-
-    Args:
-      inputs: the ith-entry in space, to be transformed before being passed to the rnns.
-
-    Returns:
-      outputs: the transformed input after space encoding.
-    """
-
-    with vs.variable_scope( "linear_space_encoder" ):
-      scope = scope or "space_encoder"
-
-      w_in = tf.get_variable("proj_w_in", [self.input_size, self.rnn_size],
-          dtype=dtype,
-          initializer=tf.random_uniform_initializer(minval=-0.04, maxval=0.04))
-      b_in = tf.get_variable("proj_b_in", [self.rnn_size],
-          dtype=dtype,
-          initializer=tf.random_uniform_initializer(minval=-0.04, maxval=0.04))
-
-      # Apply the multiplication to everything
-      outputs = [tf.matmul(input_, w_in) + b_in for input_ in inputs]
-
-    return outputs
 
   def linear_space_decoder( self, inputs, dtype, scope=None ):
     """
