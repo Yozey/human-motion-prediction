@@ -516,7 +516,7 @@ class Seq2SeqModel(object):
 
     return seeds
 
-  def get_batch_ashesh(self, data, action ):
+  def get_batch_srnn(self, data, action ):
     """Get a random batch of data from the specified bucket, prepare for step.
 
     Args:
@@ -564,13 +564,12 @@ class Seq2SeqModel(object):
 
     encoder_inputs  = np.zeros( (batch_size, source_seq_len-1, self.input_size), dtype=float )
     decoder_inputs  = np.zeros( (batch_size, target_seq_len, self.input_size), dtype=float )
-    #decoder_outputs = np.zeros( (batch_size, target_seq_len, self.HUMAN_SIZE), dtype=float )
     decoder_outputs = np.zeros( (batch_size, target_seq_len, self.input_size), dtype=float )
 
     # How many frames in total do we need?
     total_frames = source_seq_len + target_seq_len
 
-    # Trying to reproduce Ashesh's sequence cherry-picking as done in
+    # Trying to reproduce SRNN's sequence cherry-picking as done in
     # https://github.com/libicocco/RNNexp/blob/master/structural_rnn/CRFProblems/H3.6m/processdata.py#L343
     for i in xrange( batch_size ):
 

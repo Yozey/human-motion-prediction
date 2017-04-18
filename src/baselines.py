@@ -17,13 +17,15 @@ import seq2seq_model
 class Object(object):
     pass
 
-def running_average( ashesh_data, actions, k ):
+def running_average( actions_dict, actions, k ):
   """
-  Compute the error if we take the average of the last k frames.
+  Compute the error if we simply take the average of the last k frames.
 
   Args:
-    ashesh_data:
-    k: number of frames to average
+    actions_dict: Dictionary where keys are the actions, and each entry has a
+                  tuple of (enc_in, dec_in, dec_out) poses.
+    actions:      List of strings. The keys of actions_dict.
+    k:            Integer. Number of frames to use for running average.
 
   Returns:
     errs: a dictionary where, for each action, we have a 100-long list with the
@@ -31,7 +33,7 @@ def running_average( ashesh_data, actions, k ):
   """
 
   # Get how many batches we have
-  enc_in, dec_in, dec_out = ashesh_data[ actions[0] ]
+  enc_in, dec_in, dec_out = actions_dict[ actions[0] ]
 
   n_sequences = len( enc_in )
   seq_length_out = dec_out[0].shape[0]
@@ -44,7 +46,7 @@ def running_average( ashesh_data, actions, k ):
     errs[ action ] = np.zeros( (n_sequences, seq_length_out) )
 
     # Get the lists for this action
-    enc_in, dec_in, dec_out = ashesh_data[action]
+    enc_in, dec_in, dec_out = actions_dict[action]
 
     for i in np.arange( n_sequences ):
 
@@ -156,12 +158,12 @@ def main():
     _, test_set, data_mean, data_std, dim_to_ignore, dim_to_use =  translate.read_all_data(
       actions, FLAGS.seq_length_in, FLAGS.seq_length_out, FLAGS.data_dir, not FLAGS.omit_one_hot )
 
-    # Get all the data for Ashesh's seeds, and convert it to euler angles
-    ashesh_data = {}
+    # Get all the data, denormalize and convert it to euler angles
+    poses_data = {}
 
     np.random.seed(4321)
     for action in actions:
-      enc_in, dec_in, dec_out = model.get_batch_ashesh( test_set, action )
+      enc_in, dec_in, dec_out = model.get_batch_srnn( test_set, action )
 
       enc_in  = denormalize_and_convert_to_euler(
         enc_in, data_mean, data_std, dim_to_ignore, actions, not FLAGS.omit_one_hot )
@@ -170,12 +172,12 @@ def main():
       dec_out = denormalize_and_convert_to_euler(
         dec_out, data_mean, data_std, dim_to_ignore, actions, not FLAGS.omit_one_hot )
 
-      ashesh_data[action] = (enc_in, dec_in, dec_out)
+      poses_data[action] = (enc_in, dec_in, dec_out)
 
     # Compute baseline errors
-    errs_constant_frame = running_average( ashesh_data, actions, 1 )
-    running_average_2   = running_average( ashesh_data, actions, 2 )
-    running_average_4   = running_average( ashesh_data, actions, 4 )
+    errs_constant_frame = running_average( poses_data, actions, 1 )
+    running_average_2   = running_average( poses_data, actions, 2 )
+    running_average_4   = running_average( poses_data, actions, 4 )
 
     print()
     print("=== Zero-velocity (running avg. 1) ===")
