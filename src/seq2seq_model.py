@@ -36,7 +36,6 @@ class Seq2SeqModel(object):
                learning_rate_decay_factor,
                summaries_dir,
                loss_to_use,
-               residual_rnn,
                use_space_encoder,
                number_of_actions,
                one_hot=True,
@@ -82,10 +81,6 @@ class Seq2SeqModel(object):
     # === Create the RNN that will keep the state ===
     print('rnn_size = {0}'.format( rnn_size ))
     single_cell = tf.contrib.rnn.GRUCell( self.rnn_size )
-
-    # Might have residual connection
-    if residual_rnn:
-      single_cell = rnn_cell_extensions.ResidualWrapper( single_cell )
 
     # Might be a stack of many layers
     if num_layers > 1:
