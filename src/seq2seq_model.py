@@ -407,27 +407,6 @@ class Seq2SeqModel(object):
 
     self.saver = tf.train.Saver( tf.global_variables(), max_to_keep=10 )
 
-  def linear_space_decoder( self, inputs, dtype, scope=None ):
-    """
-    A space decoder, for after-rnn processing.
-    """
-
-    with vs.variable_scope( "linear_space_decoder" ):
-      scope = scope or "space_decoder"
-
-      w_out = tf.get_variable("proj_w_out", [self.rnn_size, self.HUMAN_SIZE],
-          dtype=dtype,
-          initializer=tf.random_uniform_initializer(minval=-0.04, maxval=0.04))
-      b_out = tf.get_variable("proj_b_out", [self.HUMAN_SIZE],
-          dtype=dtype,
-          initializer=tf.random_uniform_initializer(minval=-0.04, maxval=0.04))
-
-      # Apply the linear transform to the inputs
-      outputs = [tf.matmul(input_, w_out) + b_out for input_ in inputs]
-
-    return outputs
-
-
   def step(self, session, encoder_inputs, decoder_inputs, decoder_outputs,
              forward_only, ashesh_seeds=False ):
     """Run a step of the model feeding the given inputs.
