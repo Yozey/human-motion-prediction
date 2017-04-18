@@ -45,7 +45,7 @@ To train and reproduce the results of our models, use the following commands
 
 You can substitute the `--action walking` parameter for any action in 
 
-````
+```
 ["directions", "discussion", "eating", "greeting", "phoning",
  "posing", "purchases", "sitting", "sittingdown", "smoking",
  "takingphoto", "waiting", "walking", "walkingdog", "walkingtogether"]
