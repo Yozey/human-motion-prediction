@@ -87,8 +87,6 @@ def expmap2rotmat(r):
   """
   theta = np.linalg.norm( r )
   r0  = np.divide( r, theta + np.finfo(np.float32).eps )
-  # XXX should we remove this commented line?
-  #r0  = np.divide( r, theta + np.finfo(np.float64).eps )
   r0x = np.array([0, -r0[2], r0[1], 0, 0, -r0[0], 0, 0, 0]).reshape(3,3)
   r0x = r0x - r0x.T
   R = np.eye(3,3) + np.sin(theta)*r0x + (1-np.cos(theta))*(r0x).dot(r0x);
