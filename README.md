@@ -37,13 +37,13 @@ To reproduce the running average baseline results from our paper, run
 
 To train and reproduce the results of our models, use the following commands
 
-| model      | arguments | notes |
-| ---        | ---       | ---   |
-| Sampling-based loss (SA) | `python src/translate.py --action walking --seq_length_out 25` | Realistic long-term motion, loss computed over 1 second. Training time in TITAN x: XXX seconds|
-| Residual (SA)            | `python src/translate.py --residual_velocities --action walking` |  Training time in TITAN x: XXX seconds|
-| Residual unsup. (MA)     | `python src/translate.py --residual_velocities --learning_rate 0.005 --omit_one_hot` |  Training time in TITAN x: XXX seconds|
-| Residual sup. (MA)       | `python src/translate.py --residual_velocities --learning_rate 0.005` | best quantitative. Training time in TITAN x: XXX seconds|
-| Untied       | `python src/translate.py --residual_velocities --learning_rate 0.005 --architecture basic` |  Training time in TITAN x: XXX seconds|
+| model      | arguments | training time (gtx 1080) | notes |
+| ---        | ---       | ---   | --- |
+| Sampling-based loss (SA) | `python src/translate.py --action walking --seq_length_out 25` | 0s | Realistic long-term motion, loss computed over 1 second. |
+| Residual (SA)            | `python src/translate.py --residual_velocities --action walking` | 0s |  |
+| Residual unsup. (MA)     | `python src/translate.py --residual_velocities --learning_rate 0.005 --omit_one_hot` | 0s | |
+| Residual sup. (MA)       | `python src/translate.py --residual_velocities --learning_rate 0.005` | 0s | best quantitative.|
+| Untied       | `python src/translate.py --residual_velocities --learning_rate 0.005 --architecture basic` | 0s | |
 
 
 You can substitute the `--action walking` parameter for any action in
