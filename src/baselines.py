@@ -1,5 +1,5 @@
 
-# Super-simple baselines for short term human motion prediction
+"""Super-simple baselines for short term human motion prediction."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -13,21 +13,23 @@ import translate
 import data_utils
 import seq2seq_model
 
-# Dummy object to create parameters for dummy model
+
+# Dummy object to create parameters for also-dummy model
 class Object(object):
     pass
+
 
 def running_average( actions_dict, actions, k ):
   """
   Compute the error if we simply take the average of the last k frames.
 
-  Args:
+  Args
     actions_dict: Dictionary where keys are the actions, and each entry has a
                   tuple of (enc_in, dec_in, dec_out) poses.
-    actions:      List of strings. The keys of actions_dict.
-    k:            Integer. Number of frames to use for running average.
+    actions: List of strings. The keys of actions_dict.
+    k:Integer. Number of frames to use for running average.
 
-  Returns:
+  Returns
     errs: a dictionary where, for each action, we have a 100-long list with the
           error at each point in time.
   """
@@ -78,20 +80,28 @@ def running_average( actions_dict, actions, k ):
 
   return errs
 
+
 def denormalize_and_convert_to_euler( data, data_mean, data_std, dim_to_ignore, actions, one_hot ):
   """
-  Args:
-    data
-    data_mean
-    ...
+  Denormalizes data and converts to Euler angles
+  (all losses are computed on Euler angles).
 
-  Returns:
+  Args
+    data: dictionary with human poses.
+    data_mean: d-long vector with the mean of the training data.
+    data_std: d-long vector with the standard deviation of the training data.
+    dim_to_ignore: dimensions to ignore because the std is too small or for other reasons.
+    actions: list of strings with the actions in the data dictionary.
+    one_hot: whether the data comes with one-hot encoding.
+
+  Returns
     all_denormed: a list with nbatch entries. Each entry is an n-by-d matrix
                   that corresponds to a denormalized sequence in Euler angles
   """
 
   all_denormed = []
 
+  # expmap -> rotmat -> euler
   for i in np.arange( data.shape[0] ):
     denormed = data_utils.unNormalizeData(data[i,:,:], data_mean, data_std, dim_to_ignore, actions, one_hot )
 
