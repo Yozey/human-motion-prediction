@@ -10,7 +10,7 @@ On human motion prediction using recurrent neural networks. CVPR 17.
 
 Our code runs under [Tensorflow](https://github.com/tensorflow/tensorflow/) 1.0 or later.
 
-The code in this repository was written by [una-dinosauria](https://github.com/una-dinosauria/) and [libicocco](https://github.com/libicocco/).
+The code in this repository was written by [Julieta Martinez](https://github.com/una-dinosauria/) and [Javier Romero](https://github.com/libicocco/).
 
 ### Get this code and the data
 
@@ -33,17 +33,33 @@ To reproduce the running average baseline results from our paper, run
 
 `python src/baselines.py`
 
+If you get the following error
+
+``` python
+Traceback (most recent call last):
+  File "src/baselines.py", line 218, in <module>
+    main()
+  File "src/baselines.py", line 165, in main
+    dtype=dtype)
+  File "/home/jromero/src/human-motion-prediction/src/seq2seq_model.py", line 135, in __init__
+    raise(ValueError, "unknown loss: %s" % loss_to_use)
+ValueError
+[1]    18026 segmentation fault (core dumped)  python src/baselines.py
+```
+
+do WHAT?
+
 ### RNN models
 
 To train and reproduce the results of our models, use the following commands
 
 | model      | arguments | notes |
 | ---        | ---       | ---   |
-| Sampling-based loss (SA) | `python src/translate.py --action walking --seq_length_out 25` | Realistic long-term motion, loss computed over 1 second. |
-| Residual (SA)            | `python src/translate.py --residual_velocities --action walking` |  |
-| Residual unsup. (MA)     | `python src/translate.py --residual_velocities --learning_rate 0.005 --omit_one_hot` |  |
-| Residual sup. (MA)       | `python src/translate.py --residual_velocities --learning_rate 0.005` | best quantitative |
-| Untied       | `python src/translate.py --residual_velocities --learning_rate 0.005 --architecture basic` |  |
+| Sampling-based loss (SA) | `python src/translate.py --action walking --seq_length_out 25` | Realistic long-term motion, loss computed over 1 second. Training time in TITAN x: XXX seconds|
+| Residual (SA)            | `python src/translate.py --residual_velocities --action walking` |  Training time in TITAN x: XXX seconds|
+| Residual unsup. (MA)     | `python src/translate.py --residual_velocities --learning_rate 0.005 --omit_one_hot` |  Training time in TITAN x: XXX seconds|
+| Residual sup. (MA)       | `python src/translate.py --residual_velocities --learning_rate 0.005` | best quantitative. Training time in TITAN x: XXX seconds|
+| Untied       | `python src/translate.py --residual_velocities --learning_rate 0.005 --architecture basic` |  Training time in TITAN x: XXX seconds|
 
 
 You can substitute the `--action walking` parameter for any action in
@@ -56,7 +72,7 @@ You can substitute the `--action walking` parameter for any action in
 
 or `--action all` (default) to train on all actions.
 
-The code will log the error in Euler angles for each action to [tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard). You can track the progress during training by typing `tensobard --logdir log`.
+The code will log the error in Euler angles for each action to [tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard). You can track the progress during training by typing `tensobard --logdir log` in the terminal and checking the board under [this](http://127.0.1.1:6006/) url in your browser.
 
 ### Visualization
 
