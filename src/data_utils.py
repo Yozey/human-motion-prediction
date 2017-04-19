@@ -59,13 +59,12 @@ def rotmat2quat(R):
   """Matlab port to python for evaluation purposes
   https://github.com/asheshjain399/RNNexp/blob/srnn/structural_rnn/CRFProblems/H3.6m/mhmublv/Motion/rotmat2quat.m#L4
   """
-  # XXX (picky) Not a big fan of single char variable names unless totally obvious. d is not totally obvious to me
-  d = R - R.T;
+  rotdiff = R - R.T;
 
   r = np.zeros(3)
-  r[0] = -d[1,2]
-  r[1] =  d[0,2]
-  r[2] = -d[0,1]
+  r[0] = -rotdiff[1,2]
+  r[1] =  rotdiff[0,2]
+  r[2] = -rotdiff[0,1]
   sintheta = np.linalg.norm(r) / 2;
   r0 = np.divide(r, np.linalg.norm(r) + np.finfo(np.float32).eps );
 
