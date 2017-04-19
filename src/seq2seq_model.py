@@ -35,7 +35,6 @@ class Seq2SeqModel(object):
                number_of_actions,
                one_hot=True,
                residual_velocities=False,
-               loss_velocities_weight=1.0, # Weight to give to velocities
                forward_only=False,
                dtype=tf.float32):
     """Create the model.
@@ -153,27 +152,10 @@ class Seq2SeqModel(object):
 
     self.outputs = outputs
 
-    with tf.name_scope("loss_positions"): # Loss in positions
+    with tf.name_scope("loss_angles"):
+      loss_angles = tf.reduce_mean(tf.square(tf.subtract(dec_out, outputs)))
 
-      loss_positions = tf.reduce_mean(tf.square(tf.subtract(dec_out, outputs)))
-
-    with tf.name_scope("loss_velocities"): # Loss in velocities
-
-      # Revert the output
-      outputs = tf.concat( outputs, axis=0 )
-      outputs = tf.reshape( outputs, [target_seq_len, -1, self.input_size] )
-      outputs = tf.transpose( outputs, [1, 0, 2] )
-      outputs = tf.subtract(outputs[:,1:,], outputs[:,:-1,])
-
-      # Rever the input
-      dec_out = tf.concat( dec_out, axis=0 )
-      dec_out = tf.reshape( dec_out, [target_seq_len, -1, self.input_size] )
-      dec_out = tf.transpose( dec_out, [1, 0, 2] )
-      dec_out = tf.subtract(dec_out[:,1:,], dec_out[:,:-1,])
-
-      loss_velocities   = tf.reduce_mean(tf.square(tf.subtract(dec_out, outputs)))
-
-    self.loss         = ((1.0 - loss_velocities_weight) * loss_positions) + (loss_velocities_weight * loss_velocities)
+    self.loss         = loss_angles
     self.loss_summary = tf.summary.scalar('loss/loss', self.loss)
 
     # Gradients and SGD update operation for training the model.

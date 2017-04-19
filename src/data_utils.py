@@ -265,6 +265,7 @@ def load_data(path_to_dataset, subjects, actions, one_hot):
 
   return trainData, completeData
 
+
 def normalize_data( data, data_mean, data_std, dim_to_use, actions, one_hot ):
 
   data_out = {}
@@ -284,6 +285,7 @@ def normalize_data( data, data_mean, data_std, dim_to_use, actions, one_hot ):
       data_out[ key ] = np.hstack( (data_out[key], data[key][:,-nactions:]) )
 
   return data_out
+
 
 def normalization_stats(completeData):
   """"Also borrowed for Ashesh. Computes mean, stdev and dimensions to ignore.

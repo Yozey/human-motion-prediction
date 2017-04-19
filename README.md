@@ -39,14 +39,14 @@ To train and reproduce the results of our models, use the following commands
 
 | model      | arguments | notes |
 | ---        | ---       | ---   |
-| Sampling-based loss (SA) | `python src/translate.py --action walking --seq_length_out 25` | Realistic long-term motion, loss over 1 second |
+| Sampling-based loss (SA) | `python src/translate.py --action walking --seq_length_out 25` | Realistic long-term motion, loss computed over 1 second. |
 | Residual (SA)            | `python src/translate.py --residual_velocities --action walking` |  |
-| Residual sup. (MA)       | `python src/translate.py --residual_velocities --learning_rate 0.005 --omit_one_hot` |  |
+| Residual unsup. (MA)     | `python src/translate.py --residual_velocities --learning_rate 0.005 --omit_one_hot` |  |
 | Residual sup. (MA)       | `python src/translate.py --residual_velocities --learning_rate 0.005` | best quantitative |
 | Untied       | `python src/translate.py --residual_velocities --learning_rate 0.005 --architecture basic` |  |
 
 
-You can substitute the `--action walking` parameter for any action in 
+You can substitute the `--action walking` parameter for any action in
 
 ```
 ["directions", "discussion", "eating", "greeting", "phoning",
@@ -86,4 +86,3 @@ MIT
 * Remove "ashesh" from variable and function names
 * Remove functions and variables that are not used
 * Check that all results reproduce
-

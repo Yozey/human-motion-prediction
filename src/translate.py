@@ -35,7 +35,6 @@ tf.app.flags.DEFINE_integer("seq_length_in", 50, "Length of sequences to feed in
 tf.app.flags.DEFINE_integer("seq_length_out", 10, "Length of sequences that the decoder has to predict")
 tf.app.flags.DEFINE_boolean("omit_one_hot", False, "Whether to remove one-hot encoding from the data")
 tf.app.flags.DEFINE_boolean("residual_velocities", False, "Add a residual connection that effectively models velocities")
-tf.app.flags.DEFINE_float("loss_velocities_weight", 0.0, "Weight to give to residual velocities")
 # Directories
 tf.app.flags.DEFINE_string("data_dir", "./data/h3.6m/dataset", "Data directory")
 tf.app.flags.DEFINE_string("train_dir", "./log/", "Training directory.")
@@ -82,7 +81,6 @@ def create_model(session, actions, forward_only, sampling=False):
       len( actions ),
       not FLAGS.omit_one_hot,
       FLAGS.residual_velocities,
-      FLAGS.loss_velocities_weight,
       forward_only=forward_only,
       dtype=tf.float32)
 
