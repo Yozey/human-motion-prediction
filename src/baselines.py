@@ -137,7 +137,7 @@ def main():
   FLAGS.learning_rate = 0.005
   FLAGS.learning_rate_decay_factor = 1
   summaries_dir = "./log/"
-  FLAGS.loss_to_use = "self_fed"
+  FLAGS.loss_to_use = "sampling_based"
   FLAGS.omit_one_hot = True,
   FLAGS.residual_velocities = False,
   forward_only = False,
