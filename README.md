@@ -39,11 +39,11 @@ To train and reproduce the results of our models, use the following commands
 
 | model      | arguments | training time (gtx 1080) | notes |
 | ---        | ---       | ---   | --- |
-| Sampling-based loss (SA) | `python src/translate.py --action walking --seq_length_out 25` | 0s | Realistic long-term motion, loss computed over 1 second. |
-| Residual (SA)            | `python src/translate.py --residual_velocities --action walking` | 0s |  |
-| Residual unsup. (MA)     | `python src/translate.py --residual_velocities --learning_rate 0.005 --omit_one_hot` | 0s | |
-| Residual sup. (MA)       | `python src/translate.py --residual_velocities --learning_rate 0.005` | 0s | best quantitative.|
-| Untied       | `python src/translate.py --residual_velocities --learning_rate 0.005 --architecture basic` | 0s | |
+| Sampling-based loss (SA) | `python src/translate.py --action walking --seq_length_out 25` | 45s / 1000 iters | Realistic long-term motion, loss computed over 1 second. |
+| Residual (SA)            | `python src/translate.py --residual_velocities --action walking` | 35s / 1000 iters |  |
+| Residual unsup. (MA)     | `python src/translate.py --residual_velocities --learning_rate 0.005 --omit_one_hot` | 65s / 1000 iters | |
+| Residual sup. (MA)       | `python src/translate.py --residual_velocities --learning_rate 0.005` | 65s / 1000 iters | best quantitative.|
+| Untied       | `python src/translate.py --residual_velocities --learning_rate 0.005 --architecture basic` | 70s / 1000 iters | |
 
 
 You can substitute the `--action walking` parameter for any action in
