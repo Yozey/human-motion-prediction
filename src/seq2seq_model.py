@@ -389,7 +389,7 @@ class Seq2SeqModel(object):
     self.saver = tf.train.Saver( tf.global_variables(), max_to_keep=10 )
 
   def step(self, session, encoder_inputs, decoder_inputs, decoder_outputs,
-             forward_only, ashesh_seeds=False ):
+             forward_only, srnn_seeds=False ):
     """Run a step of the model feeding the given inputs.
 
     Args:
@@ -398,7 +398,7 @@ class Seq2SeqModel(object):
       decoder_inputs: list of numpy vectors to feed as decoder inputs.
       decoder_outputs: list of numpy vectors that are the expected decoder outputs.
       forward_only: whether to do the backward step or only forward.
-      ashesh_seeds: True if you want to evaluate using the sequences of SRNN
+      srnn_seeds: True if you want to evaluate using the sequences of SRNN
 
     Returns:
       A triple consisting of gradient norm (or None if we did not do backward),
@@ -413,7 +413,7 @@ class Seq2SeqModel(object):
                   self.decoder_outputs: decoder_outputs}
 
     # Output feed: depends on whether we do a backward step or not.
-    if not ashesh_seeds:
+    if not srnn_seeds:
       if not forward_only:
 
         # Training step
@@ -466,8 +466,6 @@ class Seq2SeqModel(object):
 
     encoder_inputs  = np.zeros((self.batch_size, self.source_seq_len-1, self.input_size), dtype=float)
     decoder_inputs  = np.zeros((self.batch_size, self.target_seq_len, self.input_size), dtype=float)
-    # XXX do we need this comment?
-    #decoder_outputs = np.zeros((self.batch_size, self.target_seq_len, self.HUMAN_SIZE), dtype=float)
     decoder_outputs = np.zeros((self.batch_size, self.target_seq_len, self.input_size), dtype=float)
 
     for i in xrange( self.batch_size ):
@@ -548,12 +546,10 @@ class Seq2SeqModel(object):
     decoder_inputs  = np.zeros( (batch_size, target_seq_len, self.input_size), dtype=float )
     decoder_outputs = np.zeros( (batch_size, target_seq_len, self.input_size), dtype=float )
 
-    # XXX for whom is this question? Unclear comment
-    # How many frames in total do we need?
+    # Compute the number of frames needed
     total_frames = source_seq_len + target_seq_len
 
-    # XXX Is there a better word than cherry-picking? :)
-    # Trying to reproduce SRNN's sequence cherry-picking as done in
+    # Trying to reproduce SRNN's sequence subsequence selection as done in
     # https://github.com/asheshjain399/RNNexp/blob/master/structural_rnn/CRFProblems/H3.6m/processdata.py#L343
     for i in xrange( batch_size ):
 
