@@ -136,13 +136,7 @@ def unNormalizeData(normalizedData, data_mean, data_std, dimensions_to_ignore, a
   else:
     origData[:, dimensions_to_use] = normalizedData
 
-  # XXX do we need this commented block?
-  # if not len(dimensions_to_use) == normalizedData.shape[1]:
-  #   raise(ValueError, "The lenght of the dimensions to use does not match "
-  #                     " the lenght of the unnormalized data ({0} vs {1})".format(
-  #                     len(dimensions_to_use), normalizedData.shape[1] ))
-
-  # TODO this might be very inefficient? idk
+  # TODO this might be very inefficient? We only doe it once per experiment.
   stdMat = data_std.reshape((1, D))
   stdMat = np.repeat(stdMat, T, axis=0)
   meanMat = data_mean.reshape((1, D))
@@ -226,14 +220,7 @@ def load_data(path_to_dataset, subjects, actions, one_hot):
         action_sequence = readCSVasFloat(filename)
 
         n, d = action_sequence.shape
-        # XXX do we need this commented block?
-        # odd_list = range(1, n, 2)
         even_list = range(0, n, 2)
-
-        # XXX do we need this commented block?
-        #trainData[(subj, action, subact)] = action_sequence
-        #trainData[(subj, action, subact, 'even')] = action_sequence[even_list, :]
-        #trainData[(subj, action, subact, 'odd')] = action_sequence[odd_list, :]
 
         if one_hot:
           # Add a one-hot encoding at the end of the representation
@@ -265,8 +252,7 @@ def normalize_data( data, data_mean, data_std, dim_to_use, actions, one_hot ):
       data_out[ key ] = data_out[ key ][ :, dim_to_use ]
 
   else:
-    # XXX maybe change FIXME to TODO?
-    # FIXME hard-coding 99 dimensions for un-normalized human poses
+    # TODO hard-coding 99 dimensions for un-normalized human poses
     for key in data.keys():
       data_out[ key ] = np.divide( (data[key][:, 0:99] - data_mean), data_std )
       data_out[ key ] = data_out[ key ][ :, dim_to_use ]
@@ -285,9 +271,6 @@ def normalization_stats(completeData):
   dimensions_to_ignore = []
   dimensions_to_use    = []
 
-  # XXX do we need this commented block?
-  # if not full_skeleton:
-  #   dimensions_to_ignore = [0,1,2,3,4,5]
   dimensions_to_ignore.extend( list(np.where(data_std < 1e-4)[0]) )
   dimensions_to_use.extend( list(np.where(data_std >= 1e-4)[0]) )
 
