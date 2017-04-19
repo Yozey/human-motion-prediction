@@ -56,6 +56,8 @@ You can substitute the `--action walking` parameter for any action in
 
 or `--action all` (default) to train on all actions.
 
+The code will log the error in Euler angles for each action to [tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard). You can track the progress during training typing `tensobard --logdir log`.
+
 ### Visualization
 
 TODO
@@ -79,10 +81,3 @@ The pre-processed human 3.6m dataset and some of our evaluation code (specially 
 
 ### Licence
 MIT
-
-
-### TODOS
-
-* Remove "ashesh" from variable and function names
-* Remove functions and variables that are not used
-* Check that all results reproduce
