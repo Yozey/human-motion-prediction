@@ -116,6 +116,7 @@ def denormalize_and_convert_to_euler( data, data_mean, data_std, dim_to_ignore, 
 
 def main():
 
+  # XXX should we change this for a runtime option?
   # Comment this line and uncomment below to get results for all the actions
   actions = ["discussion", "eating", "smoking", "walking"]
 
@@ -143,6 +144,7 @@ def main():
   forward_only = False,
   dtype = tf.float32
 
+  # XXX who is WE? if we don't need it, why are we using it?
   # WE do not need a GPU for this
   with tf.Session(config=tf.ConfigProto( device_count = {"GPU": 0})) as sess:
 

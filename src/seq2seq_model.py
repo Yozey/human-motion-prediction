@@ -84,6 +84,7 @@ class Seq2SeqModel(object):
     print('rnn_size = {0}'.format( rnn_size ))
     single_cell = tf.contrib.rnn.GRUCell( self.rnn_size )
 
+    # XXX comment is a bit ambiguous
     # Might be a stack of many layers
     if num_layers > 1:
       cell = tf.contrib.rnn.MultiRNNCell( [single_cell] * num_layers )
@@ -161,6 +162,7 @@ class Seq2SeqModel(object):
     # Gradients and SGD update operation for training the model.
     params = tf.trainable_variables()
 
+    # XXX maybe add this to an if of uncommented code, even if the condition is fixed in code?
     opt = tf.train.GradientDescentOptimizer( self.learning_rate )
     # opt = tf.train.MomentumOptimizer( self.learning_rate, 0.9 )
     # opt = tf.train.AdamOptimizer( self.learning_rate )
@@ -176,10 +178,12 @@ class Seq2SeqModel(object):
     # Keep track of the learning rate
     self.learning_rate_summary = tf.summary.scalar('learning_rate/learning_rate', self.learning_rate)
 
+    # XXX do we need this block of comments?
     # actions = ["directions", "greeting", "phoning",
     #             "posing", "purchases", "sitting", "sittingdown",
     #             "takingphoto", "waiting", "walkingdog", "walkingtogether"]
 
+    # XXX Wow, that's a lot of lines to type :). Not for now, but is there a way to write this more compactly/programatically?
     # === variables for loss in Euler Angles -- for each action
     with tf.name_scope( "euler_error_walking" ):
       self.walking_err80   = tf.placeholder( tf.float32, name="walking_ashesh_seeds_0080" )
@@ -404,7 +408,7 @@ class Seq2SeqModel(object):
       decoder_inputs: list of numpy vectors to feed as decoder inputs.
       decoder_outputs: list of numpy vectors that are the expected decoder outputs.
       forward_only: whether to do the backward step or only forward.
-      ashesh_seeds: True if you want to evaluate using the sequences of Ashesh
+      ashesh_seeds: True if you want to evaluate using the sequences of SRNN
 
     Returns:
       A triple consisting of gradient norm (or None if we did not do backward),
@@ -423,27 +427,27 @@ class Seq2SeqModel(object):
       if not forward_only:
 
         # Training step
-        output_feed = [self.updates,       # Update Op that does SGD.
-                     self.gradient_norms,  # Gradient norm.
-                     self.loss,
-                     self.loss_summary,
-                     self.learning_rate_summary]
+        output_feed = [self.updates,         # Update Op that does SGD.
+                       self.gradient_norms,  # Gradient norm.
+                       self.loss,
+                       self.loss_summary,
+                       self.learning_rate_summary]
 
         outputs = session.run( output_feed, input_feed )
         return outputs[1], outputs[2], outputs[3], outputs[4]  # Gradient norm, loss, summaries
 
       else:
-        # Validation step, not on Ashesh's seeds
+        # Validation step, not on SRNN's seeds
         output_feed = [self.loss, # Loss for this batch.
-                     self.loss_summary]
+                       self.loss_summary]
 
         outputs = session.run(output_feed, input_feed)
         return outputs[0], outputs[1]  # No gradient norm
     else:
-      # Validation on Ashesh's seeds
+      # Validation on SRNN's seeds
       output_feed = [self.loss, # Loss for this batch.
-                    self.outputs,
-                    self.loss_summary]
+                     self.outputs,
+                     self.loss_summary]
 
       outputs = session.run(output_feed, input_feed)
 
@@ -472,6 +476,7 @@ class Seq2SeqModel(object):
 
     encoder_inputs  = np.zeros((self.batch_size, self.source_seq_len-1, self.input_size), dtype=float)
     decoder_inputs  = np.zeros((self.batch_size, self.target_seq_len, self.input_size), dtype=float)
+    # XXX do we need this comment?
     #decoder_outputs = np.zeros((self.batch_size, self.target_seq_len, self.HUMAN_SIZE), dtype=float)
     decoder_outputs = np.zeros((self.batch_size, self.target_seq_len, self.input_size), dtype=float)
 
@@ -553,9 +558,11 @@ class Seq2SeqModel(object):
     decoder_inputs  = np.zeros( (batch_size, target_seq_len, self.input_size), dtype=float )
     decoder_outputs = np.zeros( (batch_size, target_seq_len, self.input_size), dtype=float )
 
+    # XXX for whom is this question? Unclear comment
     # How many frames in total do we need?
     total_frames = source_seq_len + target_seq_len
 
+    # XXX Is there a better word than cherry-picking? :)
     # Trying to reproduce SRNN's sequence cherry-picking as done in
     # https://github.com/asheshjain399/RNNexp/blob/master/structural_rnn/CRFProblems/H3.6m/processdata.py#L343
     for i in xrange( batch_size ):
@@ -564,10 +571,8 @@ class Seq2SeqModel(object):
       idx = idx + 50
 
       data_sel = data[ (subject, action, subsequence, 'even') ]
-      #print( data_sel.shape )
 
       data_sel = data_sel[(idx-source_seq_len):(idx+target_seq_len) ,:]
-      #print( data_sel.shape )
 
       encoder_inputs[i, :, :]  = data_sel[0:source_seq_len-1, :]
       decoder_inputs[i, :, :]  = data_sel[source_seq_len-1:(source_seq_len+target_seq_len-1), :]

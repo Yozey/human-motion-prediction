@@ -69,6 +69,7 @@ class LinearSpaceDecoderWrapper(RNNCell):
     print( 'output_size = {0}'.format(output_size) )
     print( ' state_size = {0}'.format(self._cell.state_size) )
 
+    # XXX do we need this comment?
     #with vs.variable_scope( scope or "linear_space_decoder_rnn"):
     # FIXME state size is a tuple when using a multi-rnn
 
@@ -88,6 +89,7 @@ class LinearSpaceDecoderWrapper(RNNCell):
       insize = self._cell.state_size
 
     self.w_out = tf.get_variable("proj_w_out",
+        # XXX do we need this comment?
         #[self._cell.state_size[-1] if isinstance(self._cell.state_size,tuple) else self._cell.state_size , output_size],
         [insize, output_size],
         dtype=tf.float32,

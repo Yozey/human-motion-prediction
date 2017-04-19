@@ -1,3 +1,4 @@
+# XXX why this tensorflow header? Do the tf authors have copyright over this code?
 # Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -73,6 +74,7 @@ def rotmat2quat(R):
   """Matlab port to python for evaluation purposes
   https://github.com/asheshjain399/RNNexp/blob/srnn/structural_rnn/CRFProblems/H3.6m/mhmublv/Motion/rotmat2quat.m#L4
   """
+  # XXX (picky) Not a big fan of single char variable names unless totally obvious. d is not totally obvious to me
   d = R - R.T;
 
   r = np.zeros(3)
@@ -101,6 +103,7 @@ def expmap2rotmat(r):
   """
   theta = np.linalg.norm( r )
   r0  = np.divide( r, theta + np.finfo(np.float32).eps )
+  # XXX should we remove this commented line?
   #r0  = np.divide( r, theta + np.finfo(np.float64).eps )
   r0x = np.array([0, -r0[2], r0[1], 0, 0, -r0[0], 0, 0, 0]).reshape(3,3)
   r0x = r0x - r0x.T
@@ -115,9 +118,11 @@ def revert_coordinate_space( channels_self, R0, T0 ):
   channels_reconstruct = channels_self
   R_prev = R0
   T_prev = T0
+  # XXX should we remove this commented line?
   #rootRotInd = 4:6;
   rootRotInd = np.arange(3,6)
 
+  # XXX should we remove this commented line?
   #for ii = 1:size(channels_self,1)
   for ii in np.arange( channels_self.shape[0] ):
 
@@ -133,7 +138,7 @@ def revert_coordinate_space( channels_self, R0, T0 ):
   return channels_reconstruct, R_prev, T_prev
 
 def unNormalizeData(normalizedData, data_mean, data_std, dimensions_to_ignore, actions, one_hot ):
-  """Borrowed from Ashesh. Reads a csv and returns a float matrix.
+  """Borrowed from SRNN code. Reads a csv and returns a float matrix.
   https://github.com/asheshjain399/RNNexp/blob/srnn/structural_rnn/CRFProblems/H3.6m/generateMotionData.py#L12
   """
   T = normalizedData.shape[0]
@@ -152,6 +157,7 @@ def unNormalizeData(normalizedData, data_mean, data_std, dimensions_to_ignore, a
   else:
     origData[:, dimensions_to_use] = normalizedData
 
+  # XXX do we need this commented block?
   # if not len(dimensions_to_use) == normalizedData.shape[1]:
   #   raise(ValueError, "The lenght of the dimensions to use does not match "
   #                     " the lenght of the unnormalized data ({0} vs {1})".format(
@@ -197,7 +203,7 @@ def revert_output_format(poses, data_mean, data_std, dim_to_ignore, actions, one
 
 
 def readCSVasFloat(filename):
-    """Borrowed from Ashesh. Reads a csv and returns a float matrix.
+    """Borrowed from SRNN code. Reads a csv and returns a float matrix.
     https://github.com/asheshjain399/NeuralModels/blob/master/neuralmodels/utils.py#L34
     """
     returnArray = []
@@ -211,7 +217,7 @@ def readCSVasFloat(filename):
 
 
 def load_data(path_to_dataset, subjects, actions, one_hot):
-  """Borrowed from Ashesh. This is how he reads his own .txt data.
+  """Borrowed from SRNN code. This is how he reads his own .txt data.
   https://github.com/asheshjain399/RNNexp/blob/srnn/structural_rnn/CRFProblems/H3.6m/processdata.py#L270
 
   Inputs
@@ -241,9 +247,11 @@ def load_data(path_to_dataset, subjects, actions, one_hot):
         action_sequence = readCSVasFloat(filename)
 
         n, d = action_sequence.shape
+        # XXX do we need this commented block?
         # odd_list = range(1, n, 2)
         even_list = range(0, n, 2)
 
+        # XXX do we need this commented block?
         #trainData[(subj, action, subact)] = action_sequence
         #trainData[(subj, action, subact, 'even')] = action_sequence[even_list, :]
         #trainData[(subj, action, subact, 'odd')] = action_sequence[odd_list, :]
@@ -278,6 +286,7 @@ def normalize_data( data, data_mean, data_std, dim_to_use, actions, one_hot ):
       data_out[ key ] = data_out[ key ][ :, dim_to_use ]
 
   else:
+    # XXX maybe change FIXME to TODO?
     # FIXME hard-coding 99 dimensions for un-normalized human poses
     for key in data.keys():
       data_out[ key ] = np.divide( (data[key][:, 0:99] - data_mean), data_std )
@@ -288,7 +297,7 @@ def normalize_data( data, data_mean, data_std, dim_to_use, actions, one_hot ):
 
 
 def normalization_stats(completeData):
-  """"Also borrowed for Ashesh. Computes mean, stdev and dimensions to ignore.
+  """"Also borrowed for SRNN code. Computes mean, stdev and dimensions to ignore.
   https://github.com/asheshjain399/RNNexp/blob/srnn/structural_rnn/CRFProblems/H3.6m/processdata.py#L33
   """
   data_mean = np.mean(completeData, axis=0)
@@ -297,13 +306,13 @@ def normalization_stats(completeData):
   dimensions_to_ignore = []
   dimensions_to_use    = []
 
+  # XXX do we need this commented block?
   # if not full_skeleton:
   #   dimensions_to_ignore = [0,1,2,3,4,5]
   dimensions_to_ignore.extend( list(np.where(data_std < 1e-4)[0]) )
   dimensions_to_use.extend( list(np.where(data_std >= 1e-4)[0]) )
 
   data_std[dimensions_to_ignore] = 1.0
-  #print(dimensions_to_ignore)
   new_idx = []
   count = 0
   for i in range(completeData.shape[1]):
