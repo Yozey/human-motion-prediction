@@ -56,7 +56,7 @@ You can substitute the `--action walking` parameter for any action in
 
 or `--action all` (default) to train on all actions.
 
-The code will log the error in Euler angles for each action to [tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard). You can track the progress during training typing `tensobard --logdir log`.
+The code will log the error in Euler angles for each action to [tensorboard](https://www.tensorflow.org/get_started/summaries_and_tensorboard). You can track the progress during training by typing `tensobard --logdir log`.
 
 ### Visualization
 
