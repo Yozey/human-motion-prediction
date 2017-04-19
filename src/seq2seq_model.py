@@ -18,11 +18,7 @@ import rnn_cell_extensions # my extensions of the tf repos
 import data_utils
 
 class Seq2SeqModel(object):
-  """Sequence-to-sequence model with attention.
-
-  This class implements a multi-layer recurrent neural network as encoder,
-  and an attention-based decoder.
-  """
+  """Sequence-to-sequence model for human motion prediction"""
 
   def __init__(self,
                architecture,
@@ -45,16 +41,24 @@ class Seq2SeqModel(object):
     """Create the model.
 
     Args:
-      source_vocab_size: size of the source vocabulary.
-      target_vocab_size: size of the target vocabulary.
-      size: number of units in each layer of the model.
-      num_layers: number of layers in the model.
+      architecture: [basic, tied] whether to tie the decoder and decoder.
+      source_seq_len: lenght of the input sequence.
+      target_seq_len: lenght of the target sequence.
+      rnn_size: number of units in the rnn.
+      num_layers: number of rnns to stack.
       max_gradient_norm: gradients will be clipped to maximally this norm.
       batch_size: the size of the batches used during training;
         the model construction is independent of batch_size, so it can be
         changed after initialization if this is convenient, e.g., for decoding.
       learning_rate: learning rate to start with.
       learning_rate_decay_factor: decay learning rate by this much when needed.
+      summaries_dir: where to log progress for tensorboard.
+      loss_to_use: [supervised, sampling_based]. Whether to use ground truth in
+        each timestep to compute the loss after decoding, or to feed back the
+        prediction from the previous time-step.
+      number_of_actions: number of classes we have.
+      one_hot: whether to use one_hot encoding during train/test (sup models).
+      residual_velocities: whether to use a residual connection that models velocities.
       forward_only: if set, we do not construct the backward pass in the model.
       dtype: the data type to use to store internal variables.
     """
