@@ -102,12 +102,9 @@ def revert_coordinate_space( channels_self, R0, T0 ):
   channels_reconstruct = channels_self
   R_prev = R0
   T_prev = T0
-  # XXX should we remove this commented line?
-  #rootRotInd = 4:6;
+
   rootRotInd = np.arange(3,6)
 
-  # XXX should we remove this commented line?
-  #for ii = 1:size(channels_self,1)
   for ii in np.arange( channels_self.shape[0] ):
 
     R_diff = expmap2rotmat( channels_self[ii, rootRotInd] )
