@@ -33,22 +33,6 @@ To reproduce the running average baseline results from our paper, run
 
 `python src/baselines.py`
 
-If you get the following error
-
-``` python
-Traceback (most recent call last):
-  File "src/baselines.py", line 218, in <module>
-    main()
-  File "src/baselines.py", line 165, in main
-    dtype=dtype)
-  File "/home/jromero/src/human-motion-prediction/src/seq2seq_model.py", line 135, in __init__
-    raise(ValueError, "unknown loss: %s" % loss_to_use)
-ValueError
-[1]    18026 segmentation fault (core dumped)  python src/baselines.py
-```
-
-do WHAT?
-
 ### RNN models
 
 To train and reproduce the results of our models, use the following commands
