@@ -8,9 +8,13 @@ Julieta Martinez, Michael J. Black, Javier Romero.
 On human motion prediction using recurrent neural networks. CVPR 17.
 ```
 
-Our code runs under [Tensorflow](https://github.com/tensorflow/tensorflow/) 1.0 or later.
-
 The code in this repository was written by [Julieta Martinez](https://github.com/una-dinosauria/) and [Javier Romero](https://github.com/libicocco/).
+
+### Dependencies
+
+* [Tensorflow](https://github.com/tensorflow/tensorflow/) 1.0 or later.
+* [h5py](https://github.com/h5py/h5py)
+* 
 
 ### Get this code and the data
 

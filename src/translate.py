@@ -179,7 +179,6 @@ def train():
         # === Validation with srnn's seeds ===
         for action in actions:
 
-          # XXX is the next comment accurate?
           # NOTE Uncomment this line to see errors in all actions
           if action not in ['walking', 'eating', 'smoking', 'discussion']:
             continue
@@ -200,10 +199,6 @@ def train():
 
           for i in np.arange(8):
 
-            # XXX what does it mean that rotation/translation is not accounted for?
-            # We do not need this reverse coordinate thing, as error in global
-            # rotation/translation is not accounted for.
-            #srnn_pred_expmap, _, _ = data_utils.revert_coordinate_space( srnn_pred_expmap[0], R0, T0 )
             eulerchannels_pred = srnn_pred_expmap[i]
 
             for j in np.arange( eulerchannels_pred.shape[0] ):
@@ -229,7 +224,6 @@ def train():
               print("   n/a |", end="")
           print()
 
-          # XXX :) would be good to find a way of making this programmatic, not for now :)
           # Ugly massive if-then to log the error to tensorboard :shrug:
           if action == "walking":
             summaries = sess.run(
@@ -460,10 +454,6 @@ def train():
               val_loss, srnn_loss))
         print()
 
-        # XXX if it's implemented, why is a TODO? is it a TOTEST?
-        # TODO Decrease learning rate if no improvement over last 3 iters.
-        # if len(previous_losses) > 2 and loss > max(previous_losses[-3:]):
-        #   sess.run(model.learning_rate_decay_op)
         previous_losses.append(loss)
 
         # Save the model
@@ -565,7 +555,6 @@ def sample():
       # denormalizes too
       srnn_pred_expmap = data_utils.revert_output_format( srnn_poses, data_mean, data_std, dim_to_ignore, actions, not FLAGS.omit_one_hot )
 
-      # XXX maybe we should mention in the README.md that h5py is a requirement? Anything else?
       # Save the sample
       with h5py.File( os.path.join(train_dir, 'samples_full.h5'), 'a' ) as hf:
         for i in np.arange(8):
@@ -577,9 +566,7 @@ def sample():
       mean_errors = np.zeros( (len(srnn_pred_expmap), srnn_pred_expmap[0].shape[0]) )
 
       for i in np.arange(8):
-        # XXX is this a real TODO? Can we resolve it now? Or change the comment
-        # TODO see if we need this reverse coordinate thing
-        #srnn_pred_expmap, _, _ = data_utils.revert_coordinate_space( srnn_pred_expmap[0], R0, T0 )
+
         eulerchannels_pred = srnn_pred_expmap[i]
 
         for j in np.arange( eulerchannels_pred.shape[0] ):
@@ -588,7 +575,8 @@ def sample():
               data_utils.expmap2rotmat( eulerchannels_pred[j,k:k+3] ))
 
         eulerchannels_pred[:,0:6] = 0
-        # XXX next line deserves a comment
+
+        # Pick only the dimensions with sufficient standard deviation. Others are ignored.
         idx_to_use = np.where( np.std( eulerchannels_pred, 0 ) > 1e-4 )[0]
 
         euc_error = np.power( srnn_gts_euler[action][i][:,idx_to_use] - eulerchannels_pred[:,idx_to_use], 2)
@@ -659,8 +647,10 @@ def read_all_data( actions, seq_length_in, seq_length_out, data_dir, one_hot ):
   # === Read training data ===
   print ("Reading training data (seq_len_in: {0}, seq_len_out {1}).".format(
            seq_length_in, seq_length_out))
+
   train_subject_ids = [1, 6, 7, 8, 9, 11]
   test_subject_ids = [5]
+
   train_set, complete_train = data_utils.load_data( data_dir, train_subject_ids, actions, one_hot )
   test_set, complete_test   = data_utils.load_data( data_dir, test_subject_ids, actions, one_hot )
   # Compute normalization statistics.
