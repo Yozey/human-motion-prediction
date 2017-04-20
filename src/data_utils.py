@@ -136,7 +136,7 @@ def unNormalizeData(normalizedData, data_mean, data_std, dimensions_to_ignore, a
   else:
     origData[:, dimensions_to_use] = normalizedData
 
-  # TODO this might be very inefficient? We only doe it once per experiment.
+  # potentially ineficient, but only done once per experiment
   stdMat = data_std.reshape((1, D))
   stdMat = np.repeat(stdMat, T, axis=0)
   meanMat = data_mean.reshape((1, D))
